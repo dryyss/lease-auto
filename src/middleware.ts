@@ -1,11 +1,20 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { DEV_COOKIE, devAuthAllowed } from '@/auth/devStrategy'
 import { auth0 } from '@/lib/auth0'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!auth0) {
+    if (devAuthAllowed() && (pathname === '/admin/login' || pathname === '/admin/create-first-user')) {
+      return NextResponse.redirect(new URL('/dev/acces', request.url))
+    }
+    if (devAuthAllowed() && pathname === '/admin/logout') {
+      const res = NextResponse.redirect(new URL('/dev/acces', request.url))
+      res.cookies.set(DEV_COOKIE, '', { path: '/', maxAge: 0 })
+      return res
+    }
     return pathname.startsWith('/auth') || pathname === '/admin/login'
       ? new NextResponse('Auth0 n’est pas configuré : renseignez AUTH0_* dans .env', { status: 503 })
       : NextResponse.next()

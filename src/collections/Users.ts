@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { admins, adminsField, isAdmin } from '@/access'
 import { auth0Strategy } from '@/auth/auth0Strategy'
+import { devStrategy } from '@/auth/devStrategy'
 
 // ADM-10 : comptes administrateur et commercial
 export const Users: CollectionConfig = {
@@ -17,7 +18,7 @@ export const Users: CollectionConfig = {
   // Pour donner un accès : créer l'utilisateur ici avec son e-mail, il se connecte ensuite via Auth0.
   auth: {
     disableLocalStrategy: true,
-    strategies: [auth0Strategy],
+    strategies: [auth0Strategy, devStrategy],
   },
   access: {
     create: admins,

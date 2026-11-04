@@ -38,7 +38,7 @@ export function ContactDock({ phoneHref, whatsappHref }: { phoneHref?: string; w
             <MessageCircle className="size-6" aria-hidden />
           </a>
         )}
-        <Link href="/contact?rappel=1" className="btn-dark rounded-full! px-5! shadow-lg">
+        <Link href="/contact?rappel=1" className="btn-primary rounded-full! px-5! shadow-lg ring-2 ring-white">
           <PhoneCall className="size-4" aria-hidden />
           Être rappelé
         </Link>

@@ -10,7 +10,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
-import { admins } from './access'
+import { admins, isAdmin } from './access'
 import { Appointments } from './collections/Appointments'
 import { Brands, Models } from './collections/Brands'
 import { Campaigns } from './collections/Campaigns'
@@ -101,7 +101,7 @@ export default buildConfig({
     redirectsPlugin({
       collections: ['vehicles', 'articles', 'local-pages'],
       overrides: {
-        admin: { group: 'Réglages' },
+        admin: { group: 'Réglages', hidden: ({ user }) => !isAdmin(user) },
         access: { read: () => true, create: admins, update: admins, delete: admins },
       },
     }),

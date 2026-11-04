@@ -1,9 +1,12 @@
 import config from '@payload-config'
+import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
 /** ADM-01 : vue d'ensemble en haut du tableau de bord de l'administration. */
 export async function Dashboard() {
   const payload = await getPayload({ config })
+  const { user } = await payload.auth({ headers: await nextHeaders() })
+  const role = user && 'role' in user ? user.role : null
   const dayStart = new Date()
   dayStart.setHours(0, 0, 0, 0)
   const dayEnd = new Date(dayStart.getTime() + 86_400_000)
@@ -32,6 +35,9 @@ export async function Dashboard() {
 
   return (
     <div style={{ marginBottom: 32 }}>
+      <p style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--theme-elevation-600)' }}>
+        {role === 'admin' ? 'Tableau de bord administrateur' : role === 'commercial' ? 'Tableau de bord commercial' : 'Tableau de bord'}
+      </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 20 }}>
         {tiles.map((t) => (
           <a

@@ -7,6 +7,9 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // Auth0 est chargé à l'exécution. Le bundler sinon recompile tout le site à chaque URL
+  // (require dynamique dans le SDK, compilation de 15 à 20 s).
+  serverExternalPackages: ['@auth0/nextjs-auth0'],
   images: {
     localPatterns: [{ pathname: '/api/media/file/**' }, { pathname: '/images/**' }],
     formats: ['image/avif', 'image/webp'],

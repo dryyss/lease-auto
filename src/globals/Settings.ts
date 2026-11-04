@@ -1,6 +1,6 @@
 import type { Field, GlobalConfig } from 'payload'
 
-import { admins, anyone } from '@/access'
+import { admins, anyone, isAdmin } from '@/access'
 
 const formulaRates = (name: 'loa' | 'lld' | 'credit', label: string, withResidual: boolean): Field => ({
   name,
@@ -45,7 +45,7 @@ const formulaRates = (name: 'loa' | 'lld' | 'credit', label: string, withResidua
 export const Settings: GlobalConfig = {
   slug: 'settings',
   label: 'Réglages',
-  admin: { group: 'Réglages' },
+  admin: { group: 'Réglages', hidden: ({ user }) => !isAdmin(user) },
   access: { read: anyone, update: admins },
   fields: [
     {
