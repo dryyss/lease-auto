@@ -1,8 +1,10 @@
-import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
 import { publishedOrStaff, staff } from '@/access'
 import { slugField } from '@/fields/slug'
 import { computeMonthly, type Formula } from '@/lib/finance'
+import { sendVehicleAlerts } from '@/lib/notifications'
+import type { Vehicle } from '@/payload-types'
 
 const formulas: { value: Formula; label: string }[] = [
   { value: 'loa', label: 'LOA' },
@@ -44,6 +46,21 @@ const trackSoldAt: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
   return data
 }
 
+// AUTO-05 : à la première mise en ligne, alerte les abonnés dont les critères correspondent.
+const sendAlertsOnPublish: CollectionAfterChangeHook<Vehicle> = async ({ doc, req, context }) => {
+  if (context.skipAlerts || doc._status !== 'published' || doc.alertsSentAt || doc.status === 'sold') return doc
+  const sent = await sendVehicleAlerts(req.payload, doc)
+  await req.payload.update({
+    collection: 'vehicles',
+    id: doc.id,
+    data: { alertsSentAt: new Date().toISOString() },
+    context: { skipAlerts: true },
+    req,
+  })
+  req.payload.logger.info(`Alertes envoyées pour ${doc.title} : ${sent}`)
+  return doc
+}
+
 export const Vehicles: CollectionConfig = {
   slug: 'vehicles',
   labels: { singular: 'Véhicule', plural: 'Véhicules' },
@@ -60,7 +77,7 @@ export const Vehicles: CollectionConfig = {
     update: staff,
     delete: staff,
   },
-  hooks: { beforeChange: [trackSoldAt, computeMonthlies] },
+  hooks: { beforeChange: [trackSoldAt, computeMonthlies], afterChange: [sendAlertsOnPublish] },
   fields: [
     {
       type: 'row',
@@ -94,7 +111,7 @@ export const Vehicles: CollectionConfig = {
       ],
     },
     { name: 'soldAt', label: 'Vendu le', type: 'date', admin: { position: 'sidebar', readOnly: true } },
-    { name: 'featured', label: 'À la une (accueil)', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
+    { name: 'alertsSentAt', label: 'Alertes envoyées le', type: 'date', admin: { position: 'sidebar', readOnly: true } },    { name: 'featured', label: 'À la une (accueil)', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
     {
       type: 'tabs',
       tabs: [

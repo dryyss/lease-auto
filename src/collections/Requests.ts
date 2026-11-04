@@ -1,6 +1,8 @@
-import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
 import { admins, staff } from '@/access'
+import { notifyStatusChange } from '@/lib/notifications'
+import type { Request } from '@/payload-types'
 
 const statuses = [
   { label: 'Nouvelle', value: 'new' },
@@ -19,7 +21,15 @@ const trackHistory: CollectionBeforeChangeHook = ({ data, originalDoc, req, oper
     { status: data.status, at: new Date().toISOString(), by: req.user?.id ?? null },
   ]
   if (data.status !== 'new') data.lastActionAt = new Date().toISOString()
+  if (data.status === 'delivered' && !data.deliveredAt) data.deliveredAt = new Date().toISOString()
   return data
+}
+
+// MAIL-02 : e-mail au client à chaque changement de statut fait par l'équipe.
+const emailStatusChange: CollectionAfterChangeHook<Request> = async ({ doc, previousDoc, operation, req, context }) => {
+  if (operation !== 'update' || context.skipEmails || doc.status === previousDoc?.status) return doc
+  await notifyStatusChange(req.payload, doc)
+  return doc
 }
 
 // Demandes de financement, reprise, contact et rappel (PUB-03, PUB-12, PUB-13).
@@ -40,6 +50,7 @@ export const Requests: CollectionConfig = {
     delete: admins,
   },
   hooks: {
+    afterChange: [emailStatusChange],
     beforeChange: [
       trackHistory,
       ({ data, operation }) => {
@@ -80,6 +91,10 @@ export const Requests: CollectionConfig = {
     },
     { name: 'assignedTo', label: 'Suivi par', type: 'relationship', relationTo: 'users', admin: { position: 'sidebar' } },
     { name: 'lastActionAt', label: 'Dernière action équipe', type: 'date', admin: { position: 'sidebar', readOnly: true } },
+    { name: 'deliveredAt', label: 'Livrée le', type: 'date', admin: { position: 'sidebar', readOnly: true } },
+    { name: 'reviewRequestedAt', label: 'Avis demandé le', type: 'date', admin: { position: 'sidebar', readOnly: true } },
+    { name: 'teamRemindedAt', type: 'date', admin: { hidden: true } },
+    { name: 'source', label: 'Origine', type: 'text', admin: { position: 'sidebar', readOnly: true } },
     {
       type: 'tabs',
       tabs: [

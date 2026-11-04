@@ -39,6 +39,12 @@
 }
 
 @layer base {
+  /* Empêche le contenu de gonfler les enfants flex/grid (reset moderne) */
+  *,
+  *::before,
+  *::after {
+    min-width: 0;
+  }
   html {
     overflow-x: clip;
     scroll-behavior: smooth;
@@ -88,7 +94,7 @@
   }
 
   .input-field {
-    @apply w-full rounded-2xl border border-line bg-white px-4 py-3 text-[15px] text-primary transition outline-none;
+    @apply w-full rounded-2xl border border-line bg-white px-4 py-3 text-base text-primary transition outline-none;
   }
   .input-field:focus {
     border-color: var(--color-accent);

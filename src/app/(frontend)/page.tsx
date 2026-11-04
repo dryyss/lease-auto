@@ -3,11 +3,11 @@ import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 import { FaqSection, FormulasSection, HomeHero, ReviewsSection, SectionHeader, StatsBand, StepsSection } from '@/components/home/Sections'
-import { QuickSimulator, type FormulaRates } from '@/components/home/QuickSimulator'
+import { QuickSimulator } from '@/components/home/QuickSimulator'
 import { CreditNotice } from '@/components/ui/CreditNotice'
 import { VehicleCard } from '@/components/vehicles/VehicleCard'
-import type { Formula } from '@/lib/finance'
 import { getHomepage, getSettings, payloadClient, visibleVehiclesWhere } from '@/lib/payload'
+import { getFormulaRates } from '@/lib/rates'
 import type { Faq } from '@/payload-types'
 
 // Le stock change souvent : page régénérée au plus toutes les 5 minutes.
@@ -33,21 +33,7 @@ export default async function HomePage() {
   const featuredFaqs = (home.featuredFaqs ?? []).filter((f): f is Faq => typeof f === 'object')
   const faqs = featuredFaqs.length ? featuredFaqs : faqsFallback.docs
 
-  const rates: FormulaRates[] = (['loa', 'lld', 'credit'] as Formula[]).flatMap((formula) => {
-    const c = settings.financing?.[formula]
-    if (!c?.enabled || c.annualRate == null) return []
-    return [
-      {
-        formula,
-        annualRate: c.annualRate,
-        taeg: c.taeg ?? null,
-        minMonths: c.minMonths ?? 12,
-        maxMonths: c.maxMonths ?? 72,
-        defaultMonths: c.defaultMonths ?? 48,
-        residualPercent: 'residualPercent' in c ? (c.residualPercent ?? 0) : 0,
-      },
-    ]
-  })
+  const rates = await getFormulaRates()
 
   const c = settings.company
   const jsonLd = [

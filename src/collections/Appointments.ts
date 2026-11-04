@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { staff } from '@/access'
+import { notifyAppointment } from '@/lib/notifications'
 
 // PUB-14 / ADM-06 : rendez-vous d'essai ou de passage en agence. Les créneaux sont définis dans le global « Agenda ».
 export const Appointments: CollectionConfig = {
@@ -13,6 +14,14 @@ export const Appointments: CollectionConfig = {
   },
   access: { read: staff, create: staff, update: staff, delete: staff },
   defaultSort: 'startsAt',
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req, context }) => {
+        if (operation === 'create' && !context.skipEmails) await notifyAppointment(req.payload, doc)
+        return doc
+      },
+    ],
+  },
   fields: [
     {
       type: 'row',

@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
+import { FavoritesLink } from '@/components/vehicles/Favorites'
+
 const financing = [
   { name: 'LOA', desc: 'Location avec option d’achat', href: '/financement/loa', icon: KeyRound },
   { name: 'LLD', desc: 'Location longue durée, sans engagement d’achat', href: '/financement/lld', icon: FileSignature },
@@ -117,6 +119,7 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
                 {phone}
               </a>
             )}
+            <FavoritesLink />
             <Link href="/demande" className="btn-primary hidden px-5! py-2.5! sm:inline-flex">
               <CarFront className="size-4" aria-hidden />
               <span className="lg:hidden xl:inline">Demander un financement</span>
@@ -134,7 +137,7 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
           </div>
         </div>
 
-        <div className={`overflow-hidden transition-all duration-300 lg:hidden ${mobileOpen ? 'max-h-180 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className={`transition-all duration-300 lg:hidden ${mobileOpen ? 'max-h-[calc(100dvh-4.5rem)] overflow-y-auto pb-6 opacity-100' : 'max-h-0 overflow-hidden opacity-0'}`}>
           <div className="space-y-1 border-t border-line pt-4">
             {[links[0], ...financing.map((f) => ({ label: f.name === 'Simulateur' ? 'Simulateur' : `Financement ${f.name}`, href: f.href })), ...links.slice(1)].map((item) => (
               <Link

@@ -17,12 +17,16 @@
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "create-admin": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/create-admin.ts",
-    "seed:demo": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo.ts"
+    "seed:demo": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo.ts",
+    "automations": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/automations.ts",
+    "seed:content": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-content.ts"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "4.33.0",
     "@payloadcms/db-postgres": "3.91.0",
+    "@payloadcms/email-resend": "3.91.0",
     "@payloadcms/next": "3.91.0",
+    "@payloadcms/plugin-import-export": "3.91.0",
     "@payloadcms/plugin-redirects": "3.91.0",
     "@payloadcms/plugin-seo": "3.91.0",
     "@payloadcms/richtext-lexical": "3.91.0",

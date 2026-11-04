@@ -6,7 +6,7 @@ export function ContactDock({ phoneHref, whatsappHref }: { phoneHref?: string; w
   return (
     <>
       {/* Mobile : barre fixe en bas d'écran */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-white/95 backdrop-blur-lg sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg sm:hidden">
         {phoneHref && (
           <a href={phoneHref} className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-bold text-primary">
             <Phone className="size-5 text-accent" aria-hidden />

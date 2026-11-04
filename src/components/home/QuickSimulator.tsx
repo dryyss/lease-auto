@@ -88,7 +88,7 @@ export function QuickSimulator({ rates }: { rates: FormulaRates[] }) {
               <Calculator className="size-4 text-accent-on-dark" aria-hidden />
               {formula === 'credit' ? 'Mensualité estimée' : 'Loyer estimé'}
             </p>
-            <p className="text-5xl font-black tracking-tight tabular-nums">
+            <p className="text-4xl font-black tracking-tight tabular-nums sm:text-5xl">
               {formatEUR(result.monthly)}
               <span className="text-lg font-bold text-white/70">/mois*</span>
             </p>

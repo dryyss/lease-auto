@@ -2,6 +2,7 @@ import { Clock, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { NewsletterForm } from '@/components/forms/SimpleForms'
 import { telHref } from '@/lib/format'
 import { getSettings, payloadClient } from '@/lib/payload'
 
@@ -23,7 +24,7 @@ export async function Footer() {
   const c = settings.company ?? {}
 
   return (
-    <footer className="bg-primary pb-20 text-white sm:pb-0">
+    <footer className="bg-primary pb-[calc(4.75rem+env(safe-area-inset-bottom))] text-white sm:pb-0">
       {/* Bandeau d'appel à l'action */}
       <div className="border-b border-white/10">
         <div className="container-site flex flex-col items-center justify-between gap-6 py-10 sm:py-14 lg:flex-row">
@@ -86,6 +87,11 @@ export async function Footer() {
                 </li>
               )}
             </ul>
+            <div className="mt-6 max-w-sm">
+              <p className="mb-2 text-xs font-bold tracking-widest text-white/80 uppercase">Newsletter</p>
+              <p className="mb-3 text-xs text-white/50">Les nouveaux arrivages et nos offres, une à deux fois par mois.</p>
+              <NewsletterForm />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:col-span-8">
@@ -155,9 +161,15 @@ export async function Footer() {
           </ul>
         </div>
 
-        <div className="flex justify-center border-t border-white/10 py-5">
-          <a href="https://magar-developpement.fr" target="_blank" rel="noopener noreferrer" className="text-xs text-white/40 transition-colors hover:text-white">
-            Développé par <span className="font-semibold text-white/60">Magar Développement</span>
+        <div className="flex justify-center border-t border-white/10 py-6">
+          <a
+            href="https://magar-developpement.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 rounded-2xl bg-white px-4 py-2 transition hover:bg-white/90"
+          >
+            <span className="text-[11px] font-semibold tracking-wide text-ink-3 uppercase">Développé par</span>
+            <img src="/images/logo-magar.svg" alt="Magar Développement" width={72} height={66} className="h-14 w-auto" />
           </a>
         </div>
       </div>

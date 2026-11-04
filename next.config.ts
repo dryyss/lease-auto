@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
     localPatterns: [{ pathname: '/api/media/file/**' }, { pathname: '/images/**' }],
     formats: ['image/avif', 'image/webp'],
   },
+  // Justificatifs et photos envoyés par les formulaires (compressés côté navigateur, 4 Mo max).
+  experimental: { serverActions: { bodySizeLimit: '5mb' } },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

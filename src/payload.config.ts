@@ -1,4 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
+import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -11,6 +13,7 @@ import { fileURLToPath } from 'url'
 import { admins } from './access'
 import { Appointments } from './collections/Appointments'
 import { Brands, Models } from './collections/Brands'
+import { Campaigns } from './collections/Campaigns'
 import { Articles, Faqs, LocalPages, Reviews } from './collections/Content'
 import { Documents } from './collections/Documents'
 import { Media } from './collections/Media'
@@ -18,6 +21,7 @@ import { Requests } from './collections/Requests'
 import { Subscribers } from './collections/Subscribers'
 import { Users } from './collections/Users'
 import { Vehicles } from './collections/Vehicles'
+import { Agency } from './globals/Agency'
 import { Agenda } from './globals/Agenda'
 import { Homepage } from './globals/Homepage'
 import { Settings } from './globals/Settings'
@@ -32,7 +36,16 @@ export default buildConfig({
     user: Users.slug,
     meta: { titleSuffix: ' · Lease Auto' },
     importMap: { baseDir: path.resolve(dirname) },
+    components: { beforeDashboard: ['@/components/admin/Dashboard#Dashboard'] },
   },
+  // E-mails : Resend si la clé est fournie, sinon Payload les écrit dans la console (développement).
+  ...(process.env.RESEND_API_KEY && {
+    email: resendAdapter({
+      apiKey: process.env.RESEND_API_KEY,
+      defaultFromAddress: process.env.EMAIL_FROM || 'contact@lease-auto.fr',
+      defaultFromName: 'Lease Auto',
+    }),
+  }),
   i18n: { supportedLanguages: { fr }, fallbackLanguage: 'fr' },
   collections: [
     Vehicles,
@@ -42,6 +55,7 @@ export default buildConfig({
     Documents,
     Appointments,
     Subscribers,
+    Campaigns,
     Reviews,
     Faqs,
     Articles,
@@ -49,7 +63,7 @@ export default buildConfig({
     Media,
     Users,
   ],
-  globals: [Homepage, Settings, Agenda],
+  globals: [Homepage, Agency, Settings, Agenda],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
@@ -58,13 +72,30 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    // ADM-08 : export tableur des abonnés et des demandes
+    importExportPlugin({
+      collections: [
+        { slug: 'subscribers', import: false, export: { disableJobsQueue: true } },
+        { slug: 'requests', import: false, export: { disableJobsQueue: true } },
+      ],
+    }),
     // SEO-04 : titre, description et image de partage par page et par véhicule
     seoPlugin({
       collections: ['vehicles', 'brands', 'models', 'articles', 'local-pages'],
       uploadsCollection: 'media',
       tabbedUI: true,
       generateTitle: ({ doc }) => `${doc?.title ?? doc?.name ?? doc?.city ?? ''} | Lease Auto`,
-      generateURL: ({ doc, collectionSlug }) => `${serverURL}/${collectionSlug}/${doc?.slug ?? ''}`,
+      generateURL: ({ doc, collectionSlug }) => {
+        const base: Record<string, string> = {
+          vehicles: '/vehicule/',
+          brands: '/vehicules/',
+          articles: '/guides/',
+          'local-pages': '/voiture-occasion/',
+        }
+        const brandSlug = typeof doc?.brand === 'object' ? doc.brand?.slug : ''
+        const path = collectionSlug === 'models' ? `/vehicules/${brandSlug}/` : (base[collectionSlug ?? ''] ?? '/')
+        return `${serverURL}${path}${doc?.slug ?? ''}`
+      },
     }),
     // SEO-06 : redirections des anciennes adresses
     redirectsPlugin({

@@ -4,6 +4,8 @@ import Link from 'next/link'
 
 import { FUEL_LABELS, GEARBOX_LABELS, formatEUR, formatKm } from '@/lib/format'
 import { mediaSrc } from '@/lib/media'
+
+import { FavoriteButton } from './Favorites'
 import type { Media, Vehicle } from '@/payload-types'
 
 const NEW_DAYS = 14
@@ -39,6 +41,9 @@ export function VehicleCard({ vehicle, priority = false }: { vehicle: Vehicle; p
             className={`object-cover transition-transform duration-500 group-hover:scale-105 ${vehicle.status === 'sold' ? 'grayscale' : ''}`}
           />
         )}
+        <span className="absolute top-3 right-3">
+          <FavoriteButton id={vehicle.id} />
+        </span>
         {badge && (
           <span className={`absolute top-3 left-3 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide uppercase ${badge.className}`}>
             {badge.label}
@@ -56,7 +61,7 @@ export function VehicleCard({ vehicle, priority = false }: { vehicle: Vehicle; p
           <li className="flex items-center gap-1.5"><Settings2 className="size-3.5 text-ink-3" aria-hidden />{GEARBOX_LABELS[vehicle.gearbox]}</li>
         </ul>
 
-        <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-2 border-t border-line pt-4">
           <div>
             <p className="text-[11px] font-semibold text-ink-3 uppercase">Prix TTC</p>
             <p className="text-lg font-black text-primary">{formatEUR(vehicle.price)}</p>
