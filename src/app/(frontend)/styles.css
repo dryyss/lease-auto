@@ -1,164 +1,145 @@
+@import 'tailwindcss';
+
+@source "../../components/**/*.{ts,tsx}";
+@source "./**/*.{ts,tsx}";
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHARTE LEASE AUTO — couleurs relevées sur le logo (novembre 2026)
+   Structure et composants repris de Finarent, adaptés à la marque.
+
+   - Marine   #0D2449 — « LEASE » : titres, header, pied de page, fonds sombres
+   - Rouge    #DE1D22 — badge « AUTO » : boutons d'action, prix, accents
+   - Rouge profond #AC1013 — hover des boutons, dégradés
+   - Gris doux #F4F6FA — fonds de sections alternées
+
+   Contrastes vérifiés : blanc sur rouge 4,9:1, blanc sur marine 15:1,
+   rouge sur blanc 4,9:1 (WCAG AA). Le vert reste réservé aux états de succès.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --color-primary: #0d2449;
+  --color-primary-light: #1b3a6b;
+  --color-accent: #de1d22;
+  --color-accent-dark: #ac1013;
+  --color-accent-soft: #fdecec;
+  --color-soft: #f4f6fa;
+  --color-line: #e4e8f0;
+  --color-ink-2: #4a5468;
+  --color-ink-3: #7c8699;
+  /* Rouge lisible sur le marine (6,1:1) : le rouge de charte n'y tient que 3,3:1 */
+  --color-accent-on-dark: #ff7a7e;
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
 :root {
-  --font-mono: 'Roboto Mono', monospace;
+  --grad-cta: linear-gradient(135deg, #0d2449 0%, #1b3a6b 60%, #2b5596 100%);
+  --grad-red: linear-gradient(135deg, #eb2427 0%, #de1d22 45%, #ac1013 100%);
+  --grad-soft: linear-gradient(135deg, #eef2f9 0%, #f4f6fa 50%, #fdecec 100%);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  font-size: 18px;
-  line-height: 32px;
-
-  background: rgb(0, 0, 0);
-  -webkit-font-smoothing: antialiased;
-}
-
-html,
-body,
-#app {
-  height: 100%;
-}
-
-body {
-  font-family: system-ui;
-  font-size: 18px;
-  line-height: 32px;
-
-  margin: 0;
-  color: rgb(1000, 1000, 1000);
-
-  @media (max-width: 1024px) {
-    font-size: 15px;
-    line-height: 24px;
+@layer base {
+  html {
+    overflow-x: clip;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white font-sans text-gray-900 antialiased;
+    letter-spacing: -0.005em;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: rgba(222, 29, 34, 0.15);
+    color: var(--color-accent-dark);
+  }
+  :focus-visible {
+    outline: 3px solid rgba(222, 29, 34, 0.45);
+    outline-offset: 2px;
   }
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
+@layer components {
+  .container-site {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6;
+  }
+  .section {
+    @apply py-14 sm:py-20 lg:py-24;
+  }
+  .section-soft {
+    background: linear-gradient(180deg, rgba(13, 36, 73, 0.04) 0%, rgba(244, 246, 250, 0.9) 100%);
+  }
+
+  /* Boutons — rouge = action principale, marine = action secondaire forte */
+  .btn-primary,
+  .btn-dark,
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold whitespace-nowrap transition-all duration-200;
+  }
+  .btn-primary {
+    @apply bg-accent text-white hover:-translate-y-px hover:bg-accent-dark;
+    box-shadow: 0 8px 24px -8px rgba(222, 29, 34, 0.55);
+  }
+  .btn-dark {
+    @apply bg-primary text-white hover:-translate-y-px hover:bg-primary-light;
+    box-shadow: 0 8px 24px -8px rgba(13, 36, 73, 0.45);
+  }
+  .btn-ghost {
+    @apply border border-line bg-white text-primary hover:border-ink-3 hover:bg-soft;
+  }
+
+  .input-field {
+    @apply w-full rounded-2xl border border-line bg-white px-4 py-3 text-[15px] text-primary transition outline-none;
+  }
+  .input-field:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px rgba(222, 29, 34, 0.14);
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] font-semibold tracking-wide text-primary shadow-sm;
+  }
+  .eyebrow {
+    @apply text-xs font-bold tracking-[0.18em] text-accent uppercase;
+  }
+
+  /* Filet bicolore marine / rouge, rappel du logo */
+  .filet {
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, #0d2449 0 50%, #de1d22 50% 100%);
+  }
+
+  .card {
+    @apply rounded-3xl border border-line bg-white;
+  }
+  .hover-lift {
+    transition:
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.4s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 60px -15px rgba(13, 36, 73, 0.18);
+  }
+
+  .gradient-cta {
+    background: var(--grad-cta);
+    @apply relative overflow-hidden text-white;
+  }
+  .gradient-text {
+    background: linear-gradient(90deg, #0d2449 0%, #1b3a6b 45%, #de1d22 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
-h1 {
-  margin: 40px 0;
-  font-size: 64px;
-  line-height: 70px;
-  font-weight: bold;
-
-  @media (max-width: 1024px) {
-    margin: 24px 0;
-    font-size: 42px;
-    line-height: 42px;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 38px;
-    line-height: 38px;
-  }
-
-  @media (max-width: 400px) {
-    font-size: 32px;
-    line-height: 32px;
-  }
-}
-
-p {
-  margin: 24px 0;
-
-  @media (max-width: 1024px) {
-    margin: calc(var(--base) * 0.75) 0;
-  }
-}
-
-a {
-  color: currentColor;
-
-  &:focus {
-    opacity: 0.8;
-    outline: none;
-  }
-
-  &:active {
-    opacity: 0.7;
-    outline: none;
-  }
-}
-
-svg {
-  vertical-align: middle;
-}
-
-.home {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  height: 100vh;
-  padding: 45px;
-  max-width: 1024px;
-  margin: 0 auto;
-  overflow: hidden;
-
-  @media (max-width: 400px) {
-    padding: 24px;
-  }
-
-  .content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-
-    h1 {
-      text-align: center;
-    }
-  }
-
-  .links {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    a {
-      text-decoration: none;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-    }
-
-    .admin {
-      color: rgb(0, 0, 0);
-      background: rgb(1000, 1000, 1000);
-      border: 1px solid rgb(0, 0, 0);
-    }
-
-    .docs {
-      color: rgb(1000, 1000, 1000);
-      background: rgb(0, 0, 0);
-      border: 1px solid rgb(1000, 1000, 1000);
-    }
-  }
-
-  .footer {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    @media (max-width: 1024px) {
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    .codeLink {
-      text-decoration: none;
-      padding: 0 0.5rem;
-      background: rgb(60, 60, 60);
-      border-radius: 4px;
-    }
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

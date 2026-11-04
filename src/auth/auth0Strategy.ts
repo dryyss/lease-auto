@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import type { AuthStrategy } from 'payload'
 
-import { auth0, auth0Configured } from '@/lib/auth0'
+import { auth0 } from '@/lib/auth0'
 
 /**
  * Connexion à l'administration via Auth0.
@@ -13,7 +13,7 @@ import { auth0, auth0Configured } from '@/lib/auth0'
 export const auth0Strategy: AuthStrategy = {
   name: 'auth0',
   authenticate: async ({ headers, payload }) => {
-    if (!auth0Configured || !headers.get('cookie')) return { user: null }
+    if (!auth0 || !headers.get('cookie')) return { user: null }
 
     const session = await auth0.getSession(
       new NextRequest(process.env.APP_BASE_URL || 'http://localhost:3000', { headers }),

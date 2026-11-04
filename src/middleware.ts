@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { auth0, auth0Configured } from '@/lib/auth0'
+import { auth0 } from '@/lib/auth0'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (!auth0Configured) {
+  if (!auth0) {
     return pathname.startsWith('/auth') || pathname === '/admin/login'
       ? new NextResponse('Auth0 n’est pas configuré : renseignez AUTH0_* dans .env', { status: 503 })
       : NextResponse.next()
