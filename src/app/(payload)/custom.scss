@@ -1,0 +1,60 @@
+/* Charte Lease Auto dans l’admin, même si le thème sombre est mémorisé. */
+html[data-theme='dark'],
+html[data-theme='light'] {
+  color-scheme: light;
+  --theme-bg: #f4f6fa;
+  --theme-text: #0d2449;
+  --theme-input-bg: #ffffff;
+  --theme-overlay: rgba(13, 36, 73, 0.45);
+
+  --theme-elevation-0: #ffffff;
+  --theme-elevation-50: #f7f8fb;
+  --theme-elevation-100: #f4f6fa;
+  --theme-elevation-150: #e4e8f0;
+  --theme-elevation-200: #d5dbe6;
+  --theme-elevation-250: #c5cedd;
+  --theme-elevation-300: #aeb8c9;
+  --theme-elevation-350: #8e9aaf;
+  --theme-elevation-400: #7c8699;
+  --theme-elevation-450: #5c6b84;
+  --theme-elevation-500: #4a5468;
+  --theme-elevation-550: #3d4d6b;
+  --theme-elevation-600: #2c4066;
+  --theme-elevation-650: #1b3a6b;
+  --theme-elevation-700: #16325f;
+  --theme-elevation-750: #122a52;
+  --theme-elevation-800: #0d2449;
+  --theme-elevation-850: #0d2449;
+  --theme-elevation-900: #0a1c38;
+  --theme-elevation-950: #08162c;
+  --theme-elevation-1000: #0d2449;
+
+  --theme-error-400: #de1d22;
+  --theme-error-500: #de1d22;
+  --theme-error-600: #ac1013;
+}
+
+.btn--style-primary {
+  --bg-color: #de1d22;
+  --hover-bg: #ac1013;
+  --color: #ffffff;
+  --hover-color: #ffffff;
+}
+
+/* Menu latéral marine, comme le pied de page du site. */
+.nav {
+  background: #0d2449;
+  color: #ffffff;
+}
+
+.nav a,
+.nav button,
+.nav .nav-group__toggle {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.nav a:hover,
+.nav button:hover,
+.nav .nav-group__toggle:hover {
+  color: #ffffff;
+}

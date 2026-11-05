@@ -46,7 +46,7 @@ export const Campaigns: CollectionConfig = {
         { label: 'Brouillon', value: 'draft' },
         { label: 'Envoyée', value: 'sent' },
       ],
-      admin: { position: 'sidebar', readOnly: true },
+      admin: { position: 'sidebar', readOnly: true, components: { Cell: '@/components/admin/StatusCell#StatusCell' } },
     },
     { name: 'sentAt', label: 'Envoyée le', type: 'date', admin: { position: 'sidebar', readOnly: true } },
     { name: 'sentCount', label: 'Destinataires', type: 'number', admin: { position: 'sidebar', readOnly: true } },

@@ -38,9 +38,9 @@ export const Requests: CollectionConfig = {
   labels: { singular: 'Demande', plural: 'Demandes' },
   admin: {
     useAsTitle: 'reference',
-    defaultColumns: ['reference', 'type', 'lastName', 'vehicle', 'status', 'createdAt'],
+    defaultColumns: ['reference', 'status', 'type', 'firstName', 'lastName', 'phone', 'vehicle', 'createdAt'],
     group: 'Clients',
-    listSearchableFields: ['reference', 'lastName', 'email', 'phone'],
+    listSearchableFields: ['reference', 'firstName', 'lastName', 'email', 'phone'],
   },
   access: {
     // Le formulaire public crée la demande via une route serveur protégée (anti-spam), jamais en direct.
@@ -86,7 +86,7 @@ export const Requests: CollectionConfig = {
       required: true,
       defaultValue: 'new',
       index: true,
-      admin: { position: 'sidebar' },
+      admin: { position: 'sidebar', components: { Cell: '@/components/admin/StatusCell#StatusCell' } },
       options: [...statuses],
     },
     { name: 'assignedTo', label: 'Suivi par', type: 'relationship', relationTo: 'users', admin: { position: 'sidebar' } },

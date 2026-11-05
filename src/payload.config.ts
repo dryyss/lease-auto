@@ -35,6 +35,7 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     meta: { titleSuffix: ' · Lease Auto' },
+    dateFormat: 'dd/MM/yyyy HH:mm',
     importMap: { baseDir: path.resolve(dirname) },
     components: { beforeDashboard: ['@/components/admin/Dashboard#Dashboard'] },
   },

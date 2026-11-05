@@ -9,11 +9,12 @@ export const Appointments: CollectionConfig = {
   labels: { singular: 'Rendez-vous', plural: 'Rendez-vous' },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['startsAt', 'name', 'kind', 'vehicle', 'status'],
+    defaultColumns: ['startsAt', 'status', 'kind', 'name', 'phone', 'vehicle'],
     group: 'Clients',
+    listSearchableFields: ['name', 'email', 'phone'],
   },
   access: { read: staff, create: staff, update: staff, delete: staff },
-  defaultSort: 'startsAt',
+  defaultSort: '-startsAt',
   hooks: {
     afterChange: [
       async ({ doc, operation, req, context }) => {
@@ -32,7 +33,7 @@ export const Appointments: CollectionConfig = {
           { label: 'Passage en agence', value: 'visit' },
           { label: 'Livraison / remise des clés', value: 'delivery' },
         ] },
-        { name: 'status', label: 'Statut', type: 'select', required: true, defaultValue: 'confirmed', options: [
+        { name: 'status', label: 'Statut', type: 'select', required: true, defaultValue: 'confirmed', admin: { components: { Cell: '@/components/admin/StatusCell#StatusCell' } }, options: [
           { label: 'Confirmé', value: 'confirmed' },
           { label: 'Annulé', value: 'cancelled' },
           { label: 'Honoré', value: 'done' },

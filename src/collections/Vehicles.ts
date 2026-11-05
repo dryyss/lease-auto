@@ -103,7 +103,7 @@ export const Vehicles: CollectionConfig = {
       index: true,
       // Nom d'enum explicite : sinon collision avec `_status` (brouillon/publié) ajouté par les versions.
       enumName: 'enum_vehicles_sale_status',
-      admin: { position: 'sidebar' },
+      admin: { position: 'sidebar', components: { Cell: '@/components/admin/StatusCell#StatusCell' } },
       options: [
         { label: 'Disponible', value: 'available' },
         { label: 'Réservé', value: 'reserved' },
