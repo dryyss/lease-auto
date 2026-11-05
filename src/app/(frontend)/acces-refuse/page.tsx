@@ -11,7 +11,7 @@ export default function AccessDenied() {
         ajouter avec la même adresse e-mail.
       </p>
       <p>
-        {/* Lien natif : /auth/logout est une route du middleware, pas une page Next. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /auth/logout est une route middleware, pas une page Next */}
         <a href="/auth/logout">Se déconnecter et changer de compte</a>
       </p>
     </section>

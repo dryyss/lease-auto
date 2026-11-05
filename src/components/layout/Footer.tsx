@@ -169,6 +169,7 @@ export async function Footer() {
             className="inline-flex items-center gap-3 rounded-2xl bg-white px-4 py-2 transition hover:bg-white/90"
           >
             <span className="text-[11px] font-semibold tracking-wide text-ink-3 uppercase">Développé par</span>
+            {/* eslint-disable-next-line @next/next/no-img-element -- SVG externe, pas d'optimisation Next nécessaire */}
             <img src="/images/logo-magar.svg" alt="Magar Développement" width={72} height={66} className="h-14 w-auto" />
           </a>
         </div>

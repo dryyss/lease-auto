@@ -88,7 +88,7 @@ export default async function HomePage() {
 
       {featured.docs.length > 0 && (
         <section className="section relative overflow-hidden pt-0!">
-          {/* Logo watermark en fond */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- Image décorative (watermark), pas de LCP */}
           <img
             src="/images/logo-lease-auto.png"
             alt=""

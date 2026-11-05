@@ -1,6 +1,6 @@
 'use client'
 
-import { Calculator, CarFront, ChevronDown, FileSignature, KeyRound, Menu, Phone, Wallet, X } from 'lucide-react'
+import { Calculator, CarFront, ChevronDown, FileSignature, KeyRound, Menu, Phone, UserRound, Wallet, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -43,7 +43,7 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
   const linkClass = (href: string) =>
-    `rounded-lg px-3 py-2 text-[15px] font-medium whitespace-nowrap transition-colors xl:px-3.5 ${
+    `shrink-0 rounded-lg px-2.5 py-2 text-[15px] font-medium whitespace-nowrap transition-colors xl:px-3 ${
       isActive(href) ? 'text-accent' : 'text-gray-700 hover:text-primary'
     }`
 
@@ -53,13 +53,13 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
         scrolled ? 'border-b border-line/70 bg-white/90 shadow-sm backdrop-blur-xl' : 'bg-white/80 backdrop-blur-md'
       }`}
     >
-      <nav className="container-site" aria-label="Navigation principale">
-        <div className="flex h-16 items-center justify-between sm:h-[76px]">
+      <nav className="w-full px-4 sm:px-6" aria-label="Navigation principale">
+        <div className="flex h-16 items-center justify-between gap-3 sm:h-[76px]">
           <Link href="/" className="shrink-0" aria-label="Lease Auto, accueil">
             <Image src="/images/logo-lease-auto.png" alt="Lease Auto" width={456} height={85} priority className="h-8 w-auto sm:h-10" />
           </Link>
 
-          <div className="hidden items-center gap-0.5 lg:flex">
+          <div className="hidden items-center gap-0.5 xl:flex">
             <Link href={links[0].href} className={linkClass(links[0].href)}>
               {links[0].label}
             </Link>
@@ -112,23 +112,28 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
             ))}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-2">
             {phone && phoneHref && (
-              <a href={phoneHref} className="hidden items-center gap-2 text-sm font-bold text-primary hover:text-accent xl:flex">
+              <a href={phoneHref} className="hidden shrink-0 items-center gap-2 text-sm font-bold whitespace-nowrap text-primary hover:text-accent min-[1400px]:flex">
                 <Phone className="size-4 text-accent" aria-hidden />
                 {phone}
               </a>
             )}
             <FavoritesLink />
-            <Link href="/demande" className="btn-primary hidden px-5! py-2.5! sm:inline-flex">
+            <Link href="/admin" className="btn-dark hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
+              <UserRound className="size-4" aria-hidden />
+              <span className="2xl:hidden">Mon espace</span>
+              <span className="hidden 2xl:inline">Accéder à mon espace</span>
+            </Link>
+            <Link href="/demande" className="btn-primary hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
               <CarFront className="size-4" aria-hidden />
-              <span className="lg:hidden xl:inline">Demander un financement</span>
-              <span className="hidden lg:inline xl:hidden">Ma demande</span>
+              <span className="xl:hidden">Demande</span>
+              <span className="hidden xl:inline">Demander un financement</span>
             </Link>
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
-              className="flex size-10 items-center justify-center rounded-xl text-gray-700 hover:bg-soft lg:hidden"
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl text-gray-700 hover:bg-soft xl:hidden"
               aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
               aria-expanded={mobileOpen}
             >
@@ -137,7 +142,7 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
           </div>
         </div>
 
-        <div className={`transition-all duration-300 lg:hidden ${mobileOpen ? 'max-h-[calc(100dvh-4.5rem)] overflow-y-auto pb-6 opacity-100' : 'max-h-0 overflow-hidden opacity-0'}`}>
+        <div className={`transition-all duration-300 xl:hidden ${mobileOpen ? 'max-h-[calc(100dvh-4.5rem)] overflow-y-auto pb-6 opacity-100' : 'max-h-0 overflow-hidden opacity-0'}`}>
           <div className="space-y-1 border-t border-line pt-4">
             {[links[0], ...financing.map((f) => ({ label: f.name === 'Simulateur' ? 'Simulateur' : `Financement ${f.name}`, href: f.href })), ...links.slice(1)].map((item) => (
               <Link
@@ -148,6 +153,9 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
                 {item.label}
               </Link>
             ))}
+            <Link href="/admin" className="btn-dark mt-3 w-full">
+              Accéder à mon espace
+            </Link>
             <Link href="/demande" className="btn-primary mt-3 w-full">
               Demander un financement
             </Link>

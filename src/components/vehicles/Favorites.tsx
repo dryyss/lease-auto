@@ -1,6 +1,7 @@
 'use client'
 
 import { Check, Heart, Link2, Mail, MessageCircle } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 
 // PUB-08 : favoris et comparateur, gardés dans le navigateur du visiteur (pas de compte nécessaire).
@@ -71,12 +72,12 @@ export function FavoritesLink() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   return (
-    <a href="/favoris" className="relative flex size-10 items-center justify-center rounded-xl text-gray-700 hover:bg-soft" aria-label={`Favoris et comparateur${mounted && ids.length ? ` (${ids.length})` : ''}`}>
+    <Link href="/favoris" className="relative flex size-10 shrink-0 items-center justify-center rounded-xl text-gray-700 hover:bg-soft" aria-label={`Favoris et comparateur${mounted && ids.length ? ` (${ids.length})` : ''}`}>
       <Heart className="size-5" aria-hidden />
       {mounted && ids.length > 0 && (
         <span className="absolute -top-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-accent text-[10px] font-black text-white">{ids.length}</span>
       )}
-    </a>
+    </Link>
   )
 }
 

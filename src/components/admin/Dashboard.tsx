@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages -- Routes admin Payload (routeur interne, pas des pages Next) */
 import config from '@payload-config'
 import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
