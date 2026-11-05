@@ -1,0 +1,13 @@
+name: Automatisations
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+jobs:
+  cron:
+    # Ne tourne pas tant que l'URL du site n'est pas renseignée (pas d'échec en boucle avant la mise en ligne)
+    if: vars.SITE_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - run: curl -fsS --max-time 300 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${{ vars.SITE_URL }}/api/cron"

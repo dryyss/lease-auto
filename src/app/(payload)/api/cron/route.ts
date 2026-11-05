@@ -6,8 +6,8 @@ import { runAutomations } from '@/lib/automations'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
-// Appelée toutes les heures par Vercel Cron (vercel.json). Vercel envoie
-// « Authorization: Bearer $CRON_SECRET » quand la variable CRON_SECRET est définie.
+// Appelée toutes les heures par GitHub Actions (.github/workflows/automatisations.yml),
+// avec « Authorization: Bearer $CRON_SECRET ».
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
