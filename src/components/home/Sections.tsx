@@ -1,16 +1,15 @@
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ArrowRight, BadgeCheck, ChevronDown, FileSignature, KeyRound, ShieldCheck, Star, Truck, Wallet } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 
 import { mediaSrc } from '@/lib/media'
 import type { Faq, Homepage, Media, Review } from '@/payload-types'
 
-import { QuickSearch } from './QuickSearch'
+import { HeroStage, type HeroCar } from './HeroStage'
 
 export function SectionHeader({ eyebrow, title, intro, center = true }: { eyebrow: string; title: React.ReactNode; intro?: string; center?: boolean }) {
   return (
-    <div className={`mb-10 sm:mb-14 ${center ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}`}>
+    <div className={`mb-8 sm:mb-10 ${center ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}`}>
       <p className="eyebrow mb-3">{eyebrow}</p>
       <h2 className="text-3xl font-black tracking-tight text-primary sm:text-4xl lg:text-5xl">{title}</h2>
       {intro && <p className="mt-4 text-base text-ink-2 sm:text-lg">{intro}</p>}
@@ -18,64 +17,15 @@ export function SectionHeader({ eyebrow, title, intro, center = true }: { eyebro
   )
 }
 
-export function HomeHero({ hero, brands }: { hero: Homepage['hero']; brands: { name: string; slug: string }[] }) {
-  const image = typeof hero?.image === 'object' ? (hero.image as Media) : null
-  const imageSrc = mediaSrc(image, 'large')
-  const badges = hero?.badges?.length
-    ? hero.badges.map((b) => b.label)
-    : ['Garantie 12 mois', 'Réponse sous 48 h', 'Livraison partout en France']
+const DEFAULT_TITLE = 'Votre voiture d’occasion contrôlée, financée en LOA, LLD ou crédit'
 
-  return (
-    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-24">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(at 15% 25%, rgba(13,36,73,0.09) 0%, transparent 45%), radial-gradient(at 85% 40%, rgba(222,29,34,0.08) 0%, transparent 45%)',
-        }}
-      />
-      {imageSrc && (
-        <Image
-          src={imageSrc}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="-z-10 object-cover opacity-[0.07]"
-        />
-      )}
-      <div className="container-site relative grid items-center gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-        <div>
-          <p className="pill mb-6">
-            <span className="filet w-6 rounded-full" aria-hidden />
-            Agence à Épinay-sur-Seine · véhicules contrôlés
-          </p>
-          <h1 className="font-black tracking-tight text-balance text-primary" style={{ fontSize: 'clamp(34px, 4.2vw, 58px)', lineHeight: 1.05 }}>
-            {hero?.title}
-          </h1>
-          {hero?.subtitle && <p className="mt-6 max-w-[48ch] text-lg leading-relaxed text-ink-2 sm:text-xl">{hero.subtitle}</p>}
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/vehicules" className="btn-primary">
-              Voir nos véhicules <ArrowRight className="size-4" aria-hidden />
-            </Link>
-            <Link href="/simulateur" className="btn-ghost">
-              Simuler ma mensualité
-            </Link>
-          </div>
-          <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-2.5">
-            {badges.map((label) => (
-              <li key={label} className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-ink-2 uppercase">
-                <BadgeCheck className="size-4 text-accent" aria-hidden />
-                {label}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <QuickSearch brands={brands} />
-      </div>
-    </section>
-  )
+export function HomeHero({ hero, cars }: { hero: Homepage['hero']; cars: HeroCar[] }) {
+  const image = typeof hero?.image === 'object' ? (hero.image as Media) : null
+  const imageSrc = mediaSrc(image, 'large') || '/images/hero.jpg'
+  const rawTitle = hero?.title?.trim()
+  const title = !rawTitle || rawTitle === DEFAULT_TITLE ? 'Une offre claire. Sans surprise.' : rawTitle
+
+  return <HeroStage fallback={imageSrc} title={title} subtitle={hero?.subtitle ?? undefined} cars={cars} />
 }
 
 const FORMULAS = [

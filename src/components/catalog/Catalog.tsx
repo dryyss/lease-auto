@@ -5,6 +5,7 @@ import type { Where } from 'payload'
 
 import { AlertForm } from '@/components/forms/SimpleForms'
 import { CreditNotice } from '@/components/ui/CreditNotice'
+import { PageHero } from '@/components/ui/PageHero'
 import { VehicleCard } from '@/components/vehicles/VehicleCard'
 import { FUEL_LABELS, GEARBOX_LABELS } from '@/lib/format'
 import { payloadClient, visibleVehiclesWhere } from '@/lib/payload'
@@ -81,29 +82,22 @@ export async function Catalog({ params, brand, model }: { params: CatalogParams;
   const title = model ? `${brand?.name} ${model.name} d’occasion` : brand ? `${brand.name} d’occasion` : 'Nos véhicules d’occasion'
   const intro = model?.intro ?? brand?.intro
 
-  return (
-    <div className="container-site pt-28 pb-16 sm:pt-32">
-      <nav aria-label="Fil d’Ariane" className="mb-4 text-xs text-ink-3">
-        <Link href="/" className="hover:text-primary">Accueil</Link> /{' '}
-        <Link href="/vehicules" className="hover:text-primary">Véhicules</Link>
-        {brand && (
-          <>
-            {' / '}
-            <Link href={`/vehicules/${brand.slug}`} className="hover:text-primary">{brand.name}</Link>
-          </>
-        )}
-        {model && <> / {model.name}</>}
-      </nav>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-primary sm:text-4xl">{title}</h1>
-          <p className="mt-2 text-ink-2">
-            {result.totalDocs} véhicule{result.totalDocs > 1 ? 's' : ''} contrôlé{result.totalDocs > 1 ? 's' : ''}, garanti{result.totalDocs > 1 ? 's' : ''} et finançable
-            {result.totalDocs > 1 ? 's' : ''} en LOA, LLD ou crédit.
-          </p>
-        </div>
-      </div>
+  const countLabel = `${result.totalDocs} véhicule${result.totalDocs > 1 ? 's' : ''} contrôlé${result.totalDocs > 1 ? 's' : ''}, garanti${result.totalDocs > 1 ? 's' : ''} et finançable${result.totalDocs > 1 ? 's' : ''} en LOA, LLD ou crédit.`
 
+  return (
+    <>
+    <PageHero
+      compact
+      eyebrow="Stock"
+      title={title}
+      intro={countLabel}
+      crumbs={[
+        ...(brand ? [{ label: 'Véhicules', href: '/vehicules' as const }] : []),
+        ...(model && brand ? [{ label: brand.name, href: `/vehicules/${brand.slug}` }] : []),
+        { label: model?.name ?? brand?.name ?? 'Véhicules' },
+      ]}
+    />
+    <div className="container-site py-8 pb-16 sm:py-10">
       <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
         {/* Filtres : simple formulaire GET, fonctionne même sans JavaScript */}
         <div className="card h-fit p-5 lg:sticky lg:top-28">
@@ -180,6 +174,7 @@ export async function Catalog({ params, brand, model }: { params: CatalogParams;
         </div>
       </div>
     </div>
+    </>
   )
 }
 

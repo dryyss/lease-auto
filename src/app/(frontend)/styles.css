@@ -50,9 +50,23 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-white font-sans text-gray-900 antialiased;
+    @apply bg-soft font-sans text-gray-900 antialiased;
     letter-spacing: -0.005em;
     overflow-x: clip;
+  }
+  .site-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .site-veil {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(at 8% 0%, rgba(13, 36, 73, 0.22), transparent 42%),
+      radial-gradient(at 100% 8%, rgba(222, 29, 34, 0.16), transparent 36%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(244, 246, 250, 0.86) 48%, rgba(244, 246, 250, 0.92) 100%);
   }
   ::selection {
     background: rgba(222, 29, 34, 0.15);
@@ -69,7 +83,7 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6;
   }
   .section {
-    @apply py-14 sm:py-20 lg:py-24;
+    @apply py-10 sm:py-14 lg:py-16;
   }
   .section-soft {
     background: linear-gradient(180deg, rgba(13, 36, 73, 0.04) 0%, rgba(244, 246, 250, 0.9) 100%);
@@ -116,7 +130,7 @@
   }
 
   .card {
-    @apply rounded-3xl border border-line bg-white;
+    @apply rounded-3xl border border-white/80 bg-white shadow-lg shadow-primary/5;
   }
   .hover-lift {
     transition:

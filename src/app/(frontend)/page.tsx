@@ -6,9 +6,10 @@ import { FaqSection, FormulasSection, HomeHero, ReviewsSection, SectionHeader, S
 import { QuickSimulator } from '@/components/home/QuickSimulator'
 import { CreditNotice } from '@/components/ui/CreditNotice'
 import { VehicleCard } from '@/components/vehicles/VehicleCard'
+import { mediaSrc } from '@/lib/media'
 import { getHomepage, getSettings, payloadClient, visibleVehiclesWhere } from '@/lib/payload'
 import { getFormulaRates } from '@/lib/rates'
-import type { Faq } from '@/payload-types'
+import type { Faq, Media } from '@/payload-types'
 
 // Le stock change souvent : page régénérée au plus toutes les 5 minutes.
 export const revalidate = 300
@@ -17,8 +18,14 @@ export default async function HomePage() {
   const payload = await payloadClient()
   const [home, settings, where] = await Promise.all([getHomepage(), getSettings(), visibleVehiclesWhere()])
 
-  const [brands, featured, reviews, faqsFallback] = await Promise.all([
-    payload.find({ collection: 'brands', limit: 100, sort: 'name', depth: 0, select: { name: true, slug: true } }),
+  const [stage, featured, reviews, faqsFallback] = await Promise.all([
+    payload.find({
+      collection: 'vehicles',
+      where: { and: [...where.and, { status: { not_equals: 'sold' } }, { monthlyFrom: { greater_than: 0 } }] },
+      limit: 5,
+      sort: 'monthlyFrom',
+      depth: 1,
+    }),
     payload.find({
       collection: 'vehicles',
       where: { and: [...where.and, { featured: { equals: true } }, { status: { not_equals: 'sold' } }] },
@@ -68,11 +75,27 @@ export default async function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
 
-      <HomeHero hero={home.hero} brands={brands.docs.map((b) => ({ name: b.name, slug: b.slug ?? '' }))} />
+      <HomeHero
+        hero={home.hero}
+        cars={stage.docs
+          .flatMap((v) => {
+            const photo = v.gallery?.find((m): m is Media => typeof m === 'object')
+            if (!v.slug || !v.monthlyFrom) return []
+            return [{ title: v.title, slug: v.slug, monthly: v.monthlyFrom, price: v.price, image: mediaSrc(photo, 'large') }]
+          })
+          .sort((a, b) => a.monthly - b.monthly)}
+      />
 
       {featured.docs.length > 0 && (
-        <section className="section pt-0!">
-          <div className="container-site">
+        <section className="section relative overflow-hidden pt-0!">
+          {/* Logo watermark en fond */}
+          <img
+            src="/images/logo-lease-auto.png"
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-1/2 w-[80%] max-w-5xl -translate-x-1/2 -translate-y-1/2 opacity-[0.045]"
+          />
+          <div className="container-site relative">
             <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
               <SectionHeader center={false} eyebrow="À la une" title="Nos véhicules du moment" />
               <Link href="/vehicules" className="btn-ghost mb-10 sm:mb-14">
