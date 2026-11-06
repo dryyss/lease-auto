@@ -3,6 +3,7 @@ import { resendAdapter } from '@payloadcms/email-resend'
 import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { fr } from '@payloadcms/translations/languages/fr'
 import path from 'path'
@@ -73,6 +74,14 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
+    // Fichiers sur Vercel Blob en production (le disque Vercel n'est pas conservé), disque local sinon.
+    // Suffixe aléatoire : les adresses des justificatifs ne se devinent pas.
+    vercelBlobStorage({
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: true,
+      collections: { media: true, documents: { prefix: 'justificatifs' } },
+    }),
     // ADM-08 : export tableur des abonnés et des demandes
     importExportPlugin({
       collections: [
