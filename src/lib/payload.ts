@@ -1,10 +1,23 @@
 import 'server-only'
 
 import config from '@payload-config'
+import { connection } from 'next/server'
 import { getPayload, type Where } from 'payload'
 import { cache } from 'react'
 
-export const payloadClient = () => getPayload({ config })
+// Payload sans clé, ou base injoignable : pendant le pré-rendu du build, on bascule
+// la page en rendu à la demande au lieu de faire échouer `next build`.
+const offline = (err: unknown) => {
+  const bag = err as { payloadInitError?: boolean; message?: string; cause?: { payloadInitError?: boolean; message?: string } }
+  const msg = `${bag?.message ?? ''} ${bag?.cause?.message ?? ''}`
+  return Boolean(bag?.payloadInitError || bag?.cause?.payloadInitError) || /secret key|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|password authentication/i.test(msg)
+}
+
+export const payloadClient = () =>
+  getPayload({ config }).catch(async (err: unknown) => {
+    if (offline(err)) await connection()
+    throw err
+  })
 
 /** Réglages lus une seule fois par requête, même si plusieurs composants les demandent. */
 export const getSettings = cache(async () => (await payloadClient()).findGlobal({ slug: 'settings', depth: 0 }))

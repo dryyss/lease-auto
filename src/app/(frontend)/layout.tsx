@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { connection } from 'next/server'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import Image from 'next/image'
 import React from 'react'
@@ -32,6 +33,8 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Sans clé au build, le pré-rendu appellerait Payload et ferait échouer le déploiement.
+  if (!process.env.PAYLOAD_SECRET) await connection()
   const settings = await getSettings()
   const phone = settings.company?.phone
 
