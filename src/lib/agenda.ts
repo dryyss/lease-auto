@@ -20,7 +20,13 @@ export function parisTime(y: number, m: number, d: number, hh: number, mm: numbe
   return first - (parisOffset(first) - parisOffset(guess))
 }
 
-export type DaySlots = { date: string; label: string; times: { iso: string; label: string }[] }
+/** Date et heure murales de Paris à un instant donné (par défaut maintenant). */
+export function parisNow(utcMs = Date.now()) {
+  const t = new Date(utcMs + parisOffset(utcMs))
+  return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate(), hour: t.getUTCHours(), weekday: t.getUTCDay() }
+}
+
+export type DaySlots ={ date: string; label: string; times: { iso: string; label: string }[] }
 
 /** PUB-14 : créneaux libres des prochains jours, d'après le global « Agenda » et les rendez-vous existants. */
 export async function availableSlots(payload: Payload, days = 14): Promise<DaySlots[]> {

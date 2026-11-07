@@ -3,35 +3,39 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { advanceRequest, markAppointmentDone, refuseRequest } from './actions'
+import { advanceRequest, cancelAppointment, markAppointmentDone, refuseRequest } from './actions'
+
+const RUN = { advance: advanceRequest, refuse: refuseRequest, done: markAppointmentDone, cancel: cancelAppointment }
 
 export function DashAction({
   id,
   kind,
   label,
   tone = 'red',
+  confirm,
 }: {
   id: number
-  kind: 'advance' | 'refuse' | 'done'
+  kind: keyof typeof RUN
   label: string
   tone?: 'red' | 'ghost'
+  confirm?: string
 }) {
   const router = useRouter()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
 
   return (
-    <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+    <span className="la-action">
       <button
         type="button"
-        className={tone === 'red' ? 'la-btn' : 'la-btn-ghost'}
+        className={tone === 'red' ? 'la-btn' : 'la-btn la-btn--ghost'}
         disabled={pending}
+        aria-busy={pending}
         onClick={async () => {
-          if (kind === 'refuse' && !window.confirm('Refuser cette demande ? Le client est prévenu par e-mail.')) return
+          if (confirm && !window.confirm(confirm)) return
           setPending(true)
           setError('')
-          const run = kind === 'advance' ? advanceRequest : kind === 'refuse' ? refuseRequest : markAppointmentDone
-          const result = await run(id)
+          const result = await RUN[kind](id).catch(() => ({ ok: false as const, error: 'Erreur réseau, réessayez.' }))
           setPending(false)
           if (!result.ok) {
             setError(result.error)
@@ -40,9 +44,13 @@ export function DashAction({
           router.refresh()
         }}
       >
-        {pending ? '…' : label}
+        {pending ? 'En cours…' : label}
       </button>
-      {error ? <span className="la-err">{error}</span> : null}
+      {error ? (
+        <span className="la-err" role="alert">
+          {error}
+        </span>
+      ) : null}
     </span>
   )
 }

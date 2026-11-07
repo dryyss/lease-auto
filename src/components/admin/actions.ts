@@ -43,7 +43,7 @@ export async function advanceRequest(id: number): Promise<Result> {
     user,
     data: {
       status,
-      ...(current.status === 'new' ? { assignedTo: user.id } : {}),
+      ...(current.status === 'new' && !current.assignedTo ? { assignedTo: user.id } : {}),
     },
   })
   revalidatePath('/admin')
@@ -68,7 +68,7 @@ export async function refuseRequest(id: number): Promise<Result> {
   return { ok: true }
 }
 
-export async function markAppointmentDone(id: number): Promise<Result> {
+async function closeAppointment(id: number, status: 'done' | 'cancelled'): Promise<Result> {
   const { payload, user } = await staffContext()
   if (!user) return { ok: false, error: 'Session expirée.' }
   const current = await payload
@@ -76,14 +76,23 @@ export async function markAppointmentDone(id: number): Promise<Result> {
     .catch(() => null)
   if (!current) return { ok: false, error: 'Rendez-vous introuvable.' }
   if (current.status !== 'confirmed') return { ok: false, error: 'Ce rendez-vous est déjà clos.' }
+  if (status === 'done' && new Date(current.startsAt).getTime() > Date.now()) return { ok: false, error: 'Ce rendez-vous n’a pas encore eu lieu.' }
   await payload.update({
     collection: 'appointments',
     id,
     depth: 0,
     overrideAccess: false,
     user,
-    data: { status: 'done' },
+    data: { status },
   })
   revalidatePath('/admin')
   return { ok: true }
+}
+
+export async function markAppointmentDone(id: number): Promise<Result> {
+  return closeAppointment(id, 'done')
+}
+
+export async function cancelAppointment(id: number): Promise<Result> {
+  return closeAppointment(id, 'cancelled')
 }
