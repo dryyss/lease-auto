@@ -1,4 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm payload migrate && pnpm build"
+  "buildCommand": "if [ -n \"$PAYLOAD_SECRET\" ] && [ -n \"$DATABASE_URL\" ]; then pnpm payload migrate; else echo '⚠ PAYLOAD_SECRET ou DATABASE_URL absent des variables Vercel : migration ignorée, le site ne pourra pas lire la base.'; fi && pnpm build"
 }

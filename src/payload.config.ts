@@ -71,6 +71,8 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL || '' },
+    // Synchro automatique du schéma seulement sur une base locale : une base distante (Neon) passe par les migrations.
+    push: /@(localhost|127\.0\.0\.1)[:/]/.test(process.env.DATABASE_URL ?? ''),
   }),
   sharp,
   plugins: [
