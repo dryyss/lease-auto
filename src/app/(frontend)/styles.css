@@ -54,6 +54,12 @@
     letter-spacing: -0.005em;
     overflow-x: clip;
   }
+  /* L'espace de Plus Jakarta Sans est étroit (0,16 em) et l'interlettrage serré des titres le réduit encore :
+     les mots se collaient. Réglé par élément (en em) pour suivre chaque taille de texte. */
+  body,
+  body * {
+    word-spacing: 0.08em;
+  }
   .site-bg {
     position: fixed;
     inset: 0;

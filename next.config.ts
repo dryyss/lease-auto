@@ -16,6 +16,21 @@ const nextConfig: NextConfig = {
   },
   // Justificatifs et photos envoyés par les formulaires (compressés côté navigateur, 4 Mo max).
   experimental: { serverActions: { bodySizeLimit: '5mb' } },
+  // SEO : adresses de l'ancien site lease-auto.fr (application React) vers leurs équivalents, en permanent.
+  // Les autres anciennes adresses se règlent dans l'admin (Réglages → Redirections).
+  async redirects() {
+    return [
+      { source: '/vehicles', destination: '/vehicules', permanent: true },
+      { source: '/vehicles/:slug', destination: '/vehicules', permanent: true },
+      { source: '/devis', destination: '/demande', permanent: true },
+      { source: '/dossier', destination: '/demande', permanent: true },
+      { source: '/dossier/:path*', destination: '/demande', permanent: true },
+      { source: '/services', destination: '/financement/loa', permanent: true },
+      { source: '/reservation', destination: '/rendez-vous', permanent: true },
+      { source: '/booking', destination: '/rendez-vous', permanent: true },
+      { source: '/politique-de-confidentialite', destination: '/confidentialite', permanent: true },
+    ]
+  },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

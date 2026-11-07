@@ -1,5 +1,6 @@
 import { convertLexicalToPlaintext } from '@payloadcms/richtext-lexical/plaintext'
 import { ArrowRight } from 'lucide-react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { FaqSection, FormulasSection, HomeHero, ReviewsSection, SectionHeader, StatsBand, StepsSection } from '@/components/home/Sections'
@@ -13,6 +14,8 @@ import type { Faq, Media } from '@/payload-types'
 
 // Le stock change souvent : page régénérée au plus toutes les 5 minutes.
 export const revalidate = 300
+
+export const metadata: Metadata = { alternates: { canonical: '/' } }
 
 export default async function HomePage() {
   const payload = await payloadClient()

@@ -55,7 +55,7 @@ export function ActionForm({
 
   return (
     <form
-      className={`relative ${className}`}
+      className="relative"
       onSubmit={async (e) => {
         e.preventDefault()
         setPending(true)
@@ -80,7 +80,7 @@ export function ActionForm({
         </label>
       </div>
       {/* Désactivé pendant l'envoi : empêche le double envoi */}
-      <fieldset disabled={pending} className="min-w-0 disabled:opacity-70">
+      <fieldset disabled={pending} className={`min-w-0 disabled:opacity-70 ${className}`}>
         {children}
       </fieldset>
       {result && !result.ok && (

@@ -31,7 +31,11 @@ export function PageHero({
             ))}
           </nav>
         )}
-        <p className="eyebrow mb-3">{eyebrow}</p>
+        {/* Rouge de marque illisible sur photo sombre : surtitre en blanc, barre rouge pour l'accent */}
+        <p className="eyebrow mb-3 flex items-center gap-2 text-white/85">
+          <span aria-hidden className="h-0.5 w-6 rounded-full bg-accent" />
+          {eyebrow}
+        </p>
         <h1 className="max-w-3xl text-3xl font-black tracking-tight text-balance text-white sm:text-4xl lg:text-5xl">{title}</h1>
         {intro && <p className="mt-4 max-w-2xl text-base text-white/85 sm:text-lg">{intro}</p>}
         {children}

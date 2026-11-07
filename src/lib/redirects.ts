@@ -12,7 +12,7 @@ const COLLECTION_PATHS: Record<string, string> = {
  * SEO-06 : avant d'afficher une 404, cherche l'adresse dans les redirections saisies
  * dans l'administration (anciennes URL du site) et redirige en 301.
  */
-export async function redirectOrNotFound(path: string): Promise<never> {
+export async function redirectOrNotFound(path: string, fallback?: string): Promise<never> {
   const payload = await payloadClient()
   const candidates = [path, path.replace(/\/$/, ''), `${path.replace(/\/$/, '')}/`]
   const { docs } = await payload.find({ collection: 'redirects', where: { from: { in: candidates } }, limit: 1, depth: 1 })
@@ -24,5 +24,6 @@ export async function redirectOrNotFound(path: string): Promise<never> {
       permanentRedirect(`${COLLECTION_PATHS[ref.relationTo] ?? '/'}${ref.value.slug}`)
     }
   }
+  if (fallback) permanentRedirect(fallback)
   notFound()
 }

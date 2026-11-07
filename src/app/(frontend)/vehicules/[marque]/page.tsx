@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 
 import { Catalog, type CatalogParams } from '@/components/catalog/Catalog'
 import { findBrand, seoMeta } from '@/lib/catalog-lookup'
+import { redirectOrNotFound } from '@/lib/redirects'
 
 type Props = { params: Promise<{ marque: string }>; searchParams: Promise<CatalogParams> }
 
@@ -21,7 +21,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BrandPage({ params, searchParams }: Props) {
-  const brand = await findBrand((await params).marque)
-  if (!brand) notFound()
+  const { marque } = await params
+  const brand = await findBrand(marque)
+  // Pas une marque : ancienne fiche véhicule de l'ancien site (/vehicules/<annonce>), vendue depuis -> stock.
+  if (!brand) return redirectOrNotFound(`/vehicules/${marque}`, '/vehicules')
   return <Catalog params={await searchParams} brand={brand} />
 }
