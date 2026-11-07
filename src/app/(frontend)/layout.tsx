@@ -9,6 +9,7 @@ import { CookieBanner } from '@/components/layout/CookieBanner'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { telHref, whatsappHref } from '@/lib/format'
+import { indexable } from '@/lib/indexing'
 import { getSettings } from '@/lib/payload'
 
 import './styles.css'
@@ -30,6 +31,8 @@ export const metadata: Metadata = {
   openGraph: { locale: 'fr_FR', siteName: 'Lease Auto', type: 'website' },
   // SEO-07 : validation Search Console (balise meta), si renseignée
   verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION },
+  // Hors du vrai domaine (adresse *.vercel.app) : pages exclues de Google, en plus du robots.txt.
+  ...(indexable ? {} : { robots: { index: false, follow: false } }),
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

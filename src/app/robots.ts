@@ -1,9 +1,11 @@
 import type { MetadataRoute } from 'next'
 
+import { indexable } from '@/lib/indexing'
+
 export default function robots(): MetadataRoute.Robots {
   const base = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-  // Préproduction Vercel : rien n'est indexé, seule la production l'est.
-  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') {
+  // Préproduction ou adresse *.vercel.app : rien n'est indexé, seul le vrai domaine l'est.
+  if (!indexable) {
     return { rules: { userAgent: '*', disallow: '/' } }
   }
   return {
