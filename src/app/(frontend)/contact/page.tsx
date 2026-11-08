@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 
+import { CardsSection } from '@/components/content/Blocks'
 import { ContactForm } from '@/components/forms/SimpleForms'
 import { ContactAside } from '@/components/ui/ContactAside'
 import { PageHero } from '@/components/ui/PageHero'
+import { CONTACT } from '@/lib/page-content'
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -23,6 +25,8 @@ export default async function ContactPage({ searchParams }: Props) {
         </div>
         <ContactAside />
       </div>
+
+      <CardsSection eyebrow="Nous écrire" title="Ce que nous pouvons faire pour vous" items={CONTACT.reasons} columns={4} soft />
     </>
   )
 }

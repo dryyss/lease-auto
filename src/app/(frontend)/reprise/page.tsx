@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 
+import { CardsSection, QuestionsSection } from '@/components/content/Blocks'
 import { TradeInForm } from '@/components/forms/SimpleForms'
 import { ContactAside } from '@/components/ui/ContactAside'
 import { PageHero } from '@/components/ui/PageHero'
+import { TRADE_IN } from '@/lib/page-content'
 
 export const metadata: Metadata = {
   title: 'Reprise de votre véhicule : estimation gratuite',
@@ -26,6 +28,11 @@ export default function TradeInPage() {
         </div>
         <ContactAside />
       </div>
+
+      <CardsSection eyebrow="Comment ça marche" title="Votre reprise en 4 étapes" items={TRADE_IN.steps} numbered columns={4} soft />
+      <CardsSection eyebrow="L’estimation" title="Ce qui fait la valeur de votre véhicule" intro="Nous estimons votre véhicule au prix du marché, avec les mêmes critères qu’un professionnel de la revente." items={TRADE_IN.value} />
+      <CardsSection eyebrow="À préparer" title="Les documents utiles" items={TRADE_IN.documents} columns={4} soft />
+      <QuestionsSection title="Vos questions sur la reprise" items={TRADE_IN.faq} />
     </>
   )
 }

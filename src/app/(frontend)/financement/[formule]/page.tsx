@@ -1,14 +1,17 @@
+import { convertLexicalToPlaintext } from '@payloadcms/richtext-lexical/plaintext'
 import { CheckCircle2 } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { FaqSection, SectionHeader } from '@/components/home/Sections'
+import { CardsSection, FormulaCompare, ProseSection, QuestionsSection } from '@/components/content/Blocks'
+import { SectionHeader } from '@/components/home/Sections'
 import { QuickSimulator } from '@/components/home/QuickSimulator'
 import { CreditNotice } from '@/components/ui/CreditNotice'
 import { PageHero } from '@/components/ui/PageHero'
 import type { Formula } from '@/lib/finance'
 import { FORMULAS } from '@/lib/formulas-content'
+import { DOCUMENTS, FORMULA_EXTRA, PURCHASE_STEPS } from '@/lib/page-content'
 import { payloadClient } from '@/lib/payload'
 import { getFormulaRates } from '@/lib/rates'
 
@@ -27,6 +30,7 @@ export default async function FormulaPage({ params }: Props) {
   const formula = (await params).formule as Formula
   const c = FORMULAS[formula]
   if (!c) notFound()
+  const extra = FORMULA_EXTRA[formula]
 
   const payload = await payloadClient()
   const [rates, faqs] = await Promise.all([
@@ -58,6 +62,17 @@ export default async function FormulaPage({ params }: Props) {
         </div>
       </section>
 
+      {rates.length > 0 && (
+        <section className="section">
+          <div className="container-site max-w-6xl">
+            <SectionHeader eyebrow="Simulateur" title={`Votre mensualité en ${c.name}`} />
+            <QuickSimulator rates={rates} />
+          </div>
+        </section>
+      )}
+
+      <ProseSection eyebrow={`La ${c.name} en détail`} title={`Comprendre la ${c.name}`} paragraphs={extra.details} soft />
+
       <section className="section">
         <div className="container-site grid gap-10 lg:grid-cols-2">
           <div>
@@ -87,16 +102,16 @@ export default async function FormulaPage({ params }: Props) {
         </div>
       </section>
 
-      {rates.length > 0 && (
-        <section className="section section-soft">
-          <div className="container-site max-w-6xl">
-            <SectionHeader eyebrow="Simulateur" title={`Votre mensualité en ${c.name}`} />
-            <QuickSimulator rates={rates} />
-          </div>
-        </section>
-      )}
+      <CardsSection eyebrow="Fin de contrat" title={extra.endTitle} items={extra.end} soft />
+      <FormulaCompare highlight={formula} />
+      <CardsSection eyebrow="Chez Lease Auto" title="Votre financement en 4 étapes" items={PURCHASE_STEPS} numbered columns={4} soft />
+      <CardsSection eyebrow="Votre dossier" title="Les pièces à préparer" intro="Vous les envoyez en ligne, en photo ou en PDF, depuis votre demande de financement." items={DOCUMENTS} />
 
-      <FaqSection faqs={faqs.docs} />
+      <QuestionsSection
+        title={`Vos questions sur la ${c.name}`}
+        soft
+        items={[...extra.faq, ...faqs.docs.map((f) => ({ q: f.question, a: convertLexicalToPlaintext({ data: f.answer }) }))]}
+      />
       <div className="container-site pb-12">
         <CreditNotice formulas={[formula]} className="border-t border-line pt-6" />
       </div>

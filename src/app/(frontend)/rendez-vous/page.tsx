@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 
+import { CardsSection, QuestionsSection } from '@/components/content/Blocks'
 import { AppointmentForm } from '@/components/forms/SimpleForms'
 import { ContactAside } from '@/components/ui/ContactAside'
 import { PageHero } from '@/components/ui/PageHero'
 import { availableSlots } from '@/lib/agenda'
+import { APPOINTMENT } from '@/lib/page-content'
 import { payloadClient } from '@/lib/payload'
 
 export const metadata: Metadata = {
@@ -40,6 +42,9 @@ export default async function AppointmentPage({ searchParams }: Props) {
         </div>
         <ContactAside />
       </div>
+
+      <CardsSection eyebrow="Avant de venir" title="Pour un rendez-vous utile" items={APPOINTMENT.prepare} columns={4} soft />
+      <QuestionsSection title="Vos questions sur le rendez-vous" items={APPOINTMENT.faq} />
     </>
   )
 }

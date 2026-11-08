@@ -2,11 +2,13 @@ import { Phone } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { CardsSection, FormulaCompare, ProseSection, QuestionsSection } from '@/components/content/Blocks'
 import { QuickSimulator } from '@/components/home/QuickSimulator'
 import { CreditNotice } from '@/components/ui/CreditNotice'
 import { PageHero } from '@/components/ui/PageHero'
 import { telHref } from '@/lib/format'
 import { getSettings } from '@/lib/payload'
+import { SIMULATOR } from '@/lib/page-content'
 import { getFormulaRates } from '@/lib/rates'
 
 export const metadata: Metadata = {
@@ -49,6 +51,11 @@ export default async function SimulatorPage() {
         )}
         <CreditNotice className="mt-10 border-t border-line pt-6" />
       </div>
+
+      <CardsSection eyebrow="Bien lire" title="Comprendre votre simulation" items={SIMULATOR.read} columns={4} soft />
+      <ProseSection eyebrow="Nos conseils" title="Payer moins cher son financement" paragraphs={SIMULATOR.tips} />
+      <FormulaCompare soft />
+      <QuestionsSection title="Vos questions sur la simulation" items={SIMULATOR.faq} />
     </>
   )
 }

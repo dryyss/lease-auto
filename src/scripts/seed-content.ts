@@ -156,5 +156,107 @@ if (articles.totalDocs === 0) {
   done.push('2 guides')
 }
 
+// PUB-18 : FAQ (les 4 premières questions viennent de l'ancien site)
+const faqCount = await payload.count({ collection: 'faqs' })
+if (faqCount.totalDocs === 0) {
+  const faqs: [string, string, 'general' | 'loa' | 'lld' | 'credit' | 'dossier' | 'livraison'][] = [
+    ['Quel délai pour obtenir un accord ?', 'Une fois le dossier complet, l’accord de principe tombe en général sous 24 à 48 h ouvrées, selon l’organisme financier.', 'general'],
+    ['Comment se passe la fin d’une LOA ?', 'Vous rachetez le véhicule à la valeur résiduelle fixée dans le contrat, ou vous le restituez simplement.', 'loa'],
+    ['Le financement est-il adapté aux VTC et aux pros ?', 'Oui. La durée, le kilométrage et les garanties sont ajustés à un usage professionnel ou VTC.', 'general'],
+    ['Quels documents dois-je fournir ?', 'Pièce d’identité, justificatif de domicile de moins de 3 mois, 3 derniers bulletins de salaire, dernier avis d’imposition et RIB. Pour les sociétés : Kbis et liasses fiscales.', 'dossier'],
+    ['Les véhicules sont-ils garantis ?', 'Oui. Nos véhicules sont contrôlés avant la vente et garantis 12 mois. Le détail de la garantie vous est remis avec le véhicule.', 'livraison'],
+    ['Livrez-vous en dehors de l’Île-de-France ?', 'Oui, nous livrons partout en France. Les conditions de livraison vous sont précisées avant la commande. Vous pouvez aussi venir chercher le véhicule à l’agence d’Épinay-sur-Seine.', 'livraison'],
+    ['Puis-je essayer le véhicule avant de m’engager ?', 'Oui. Réservez un créneau en ligne : vous recevez une confirmation par e-mail et un rappel la veille. Pensez à votre permis de conduire.', 'general'],
+    ['Puis-je faire reprendre mon véhicule actuel ?', 'Oui. Décrivez-le avec quelques photos sur la page Reprise : vous recevez une estimation sous 48 h, sans engagement. Le montant peut servir d’apport.', 'general'],
+    ['Le financement est-il possible sans apport ?', 'Oui, le financement peut couvrir tout le prix du véhicule selon votre dossier. Un apport ou une reprise réduit simplement la mensualité.', 'credit'],
+    ['Quelle est la différence entre LOA et LLD ?', 'En LOA, vous pouvez acheter le véhicule en fin de contrat en levant l’option d’achat. En LLD, il n’y a pas d’option d’achat : vous rendez simplement le véhicule.', 'lld'],
+    ['Puis-je rembourser mon crédit auto par anticipation ?', 'Oui, en tout ou partie. Une indemnité peut s’appliquer ; elle est plafonnée par la loi et précisée dans votre offre de crédit.', 'credit'],
+    ['Ai-je un délai de rétractation ?', 'Oui. Pour un crédit auto ou une LOA, vous disposez de 14 jours après la signature de l’offre pour vous rétracter, sans avoir à vous justifier.', 'credit'],
+    ['Comment envoyer mes justificatifs ?', 'Directement en ligne, depuis votre demande de financement : une photo nette ou un PDF suffit pour chaque pièce. Vos documents sont stockés de façon sécurisée et ne servent qu’à l’étude de votre dossier.', 'dossier'],
+    ['Mon dossier est incomplet : que se passe-t-il ?', 'Un conseiller vous prévient et vous indique précisément la pièce manquante. L’étude reprend dès qu’elle est reçue.', 'dossier'],
+    ['Le kilométrage est-il limité en LLD ?', 'Oui. Vous choisissez un kilométrage annuel à la signature. Les kilomètres en trop sont facturés en fin de contrat, au tarif prévu.', 'lld'],
+    ['Qui assure le véhicule en LOA ou en LLD ?', 'Vous. Pendant le contrat, vous assurez le véhicule, en général tous risques. L’attestation est demandée avant la livraison.', 'loa'],
+  ]
+  for (const [i, [question, answer, category]] of faqs.entries()) {
+    await payload.create({ collection: 'faqs', data: { question, answer: doc(p(answer)), category, order: i } })
+  }
+  done.push(`${faqs.length} questions de FAQ`)
+}
+
+// PUB-18 : guides complémentaires (créés s'ils n'existent pas encore, d'après leur titre)
+const guides: { title: string; excerpt: string; content: Node[] }[] = [
+  {
+    title: 'LOA ou LLD : quelles différences ?',
+    excerpt: 'Option d’achat, kilométrage, fin de contrat, fiscalité : ce qui distingue vraiment les deux locations.',
+    content: [
+      p('La LOA et la LLD sont deux formes de location : dans les deux cas, vous payez un loyer pour utiliser un véhicule qui ne vous appartient pas pendant le contrat. La grande différence se joue à la fin.'),
+      h2('La LOA : une porte ouverte vers l’achat'),
+      p('La location avec option d’achat prévoit dès la signature un prix de rachat, l’option d’achat. En fin de contrat, vous choisissez : payer cette option et garder le véhicule, ou le rendre. C’est un contrat de crédit à la consommation, avec un TAEG et un délai de rétractation de 14 jours.'),
+      h2('La LLD : l’usage, sans la propriété'),
+      p('La location longue durée ne prévoit pas d’achat. Vous rendez le véhicule à la fin, après un état des lieux. Le loyer est en général plus bas qu’en LOA, et l’entretien peut être inclus selon l’offre.'),
+      h2('Les points communs'),
+      ul(['Un loyer fixe pendant toute la durée du contrat.', 'Un kilométrage annuel défini à la signature, facturé en cas de dépassement.', 'Une restitution en bon état d’usage, hors usure normale.', 'Un apport facultatif qui réduit les loyers.']),
+      h2('Laquelle choisir ?'),
+      ul(['Vous voulez pouvoir garder la voiture : la LOA.', 'Vous voulez un budget fixe sans jamais gérer de revente : la LLD.', 'Vous êtes professionnel ou VTC : la LLD est souvent la plus simple à gérer, à vérifier avec votre expert-comptable.']),
+    ],
+  },
+  {
+    title: 'Fin de LOA : acheter, rendre ou changer de véhicule',
+    excerpt: 'Vos trois options en fin de location avec option d’achat, et comment bien préparer la restitution.',
+    content: [
+      p('Quelques mois avant la fin de votre LOA, l’organisme financier vous contacte pour connaître votre choix. Trois possibilités s’offrent à vous.'),
+      h2('1. Lever l’option d’achat'),
+      p('Vous payez le montant de l’option d’achat, fixé dès la signature. Le véhicule devient le vôtre et la carte grise passe à votre nom. Le dépassement kilométrique n’est alors pas facturé.'),
+      h2('2. Restituer le véhicule'),
+      p('Vous rendez le véhicule et vous n’avez plus rien à payer, sauf en cas de dépassement du kilométrage prévu ou de dégâts allant au-delà de l’usure normale.'),
+      h2('3. Changer de véhicule'),
+      p('Vous restituez votre véhicule et repartez avec un nouveau contrat. C’est la solution pour rouler toujours dans un véhicule récent.'),
+      h2('Bien préparer la restitution'),
+      ul(['Faites réparer les petits dégâts avant l’état des lieux : c’est souvent moins cher.', 'Rassemblez le carnet d’entretien, les factures et les doubles des clés.', 'Nettoyez le véhicule, intérieur compris.', 'Vérifiez votre kilométrage par rapport au forfait prévu.']),
+    ],
+  },
+  {
+    title: 'TAEG et coût total : bien comparer deux financements',
+    excerpt: 'Mensualité, TAEG, coût total, option d’achat : les chiffres à regarder avant de signer.',
+    content: [
+      p('Deux offres de financement pour la même voiture peuvent afficher des mensualités proches et coûter des montants très différents. Voici les chiffres à comparer.'),
+      h2('Le TAEG'),
+      p('Le taux annuel effectif global regroupe les intérêts et les frais obligatoires du financement. Il doit figurer sur toute offre de crédit : c’est le meilleur indicateur pour comparer deux offres de même durée.'),
+      h2('Le coût total'),
+      p('C’est la somme de tout ce que vous payez : apport, mensualités et, en LOA, option d’achat si vous l’exercez. Comparez-le au prix du véhicule pour connaître le vrai coût du financement.'),
+      h2('La durée'),
+      p('Une durée plus longue baisse la mensualité mais augmente le coût total. Choisissez la durée la plus courte compatible avec votre budget.'),
+      h2('Les options'),
+      p('L’assurance emprunteur, l’extension de garantie ou l’entretien inclus augmentent la mensualité. Elles peuvent être utiles : vérifiez simplement ce qu’elles couvrent et leur coût.'),
+      p('Un crédit vous engage et doit être remboursé. Vérifiez vos capacités de remboursement avant de vous engager.'),
+    ],
+  },
+  {
+    title: 'Faire reprendre sa voiture : obtenir la meilleure estimation',
+    excerpt: 'Ce qui fait la valeur de votre véhicule et les bons réflexes avant de le faire estimer.',
+    content: [
+      p('La reprise de votre véhicule actuel peut servir d’apport pour le prochain et faire baisser vos mensualités. Quelques réflexes simples permettent d’en tirer le meilleur prix.'),
+      h2('Ce qui compte dans l’estimation'),
+      ul(['L’année et le kilométrage.', 'L’historique d’entretien, prouvé par le carnet et les factures.', 'L’état de la carrosserie, de l’intérieur et des pneus.', 'La motorisation, la boîte et les équipements.', 'La demande du marché pour votre modèle.']),
+      h2('Avant la demande d’estimation'),
+      ul(['Prenez des photos nettes, à la lumière du jour : avant, arrière, côtés, intérieur et compteur.', 'Signalez les défauts : l’estimation sera juste et confirmée sans surprise.', 'Rassemblez carte grise, contrôle technique, carnet et doubles des clés.']),
+      h2('Et si le véhicule est encore en financement ?'),
+      p('La reprise reste souvent possible : nous tenons compte du capital restant dû et nous nous occupons des démarches avec l’organisme financier.'),
+    ],
+  },
+]
+const created: string[] = []
+for (const g of guides) {
+  const exists = await payload.count({ collection: 'articles', where: { title: { equals: g.title } } })
+  if (exists.totalDocs > 0) continue
+  await payload.create({
+    collection: 'articles',
+    draft: false,
+    data: { title: g.title, excerpt: g.excerpt, publishedAt: new Date().toISOString(), _status: 'published', content: doc(...g.content) },
+  })
+  created.push(g.title)
+}
+if (created.length) done.push(`${created.length} guides`)
+
 console.log(done.length ? `Contenus ajoutés : ${done.join(', ')}.` : 'Rien à ajouter : tout est déjà rempli.')
 process.exit(0)
