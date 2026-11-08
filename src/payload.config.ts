@@ -38,7 +38,10 @@ export default buildConfig({
     meta: { titleSuffix: ' · Lease Auto' },
     dateFormat: 'dd/MM/yyyy HH:mm',
     importMap: { baseDir: path.resolve(dirname) },
-    components: { beforeDashboard: ['@/components/admin/Dashboard#Dashboard'] },
+    components: {
+      beforeDashboard: ['@/components/admin/Dashboard#Dashboard'],
+      providers: ['@/components/admin/AdminFont#AdminFont'],
+    },
   },
   // E-mails : Resend si la clé est fournie, sinon Payload les écrit dans la console (développement).
   ...(process.env.RESEND_API_KEY && {
