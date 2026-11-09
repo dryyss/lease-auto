@@ -30,13 +30,13 @@ export default async function AppointmentPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero
+      <PageHero compact
         eyebrow="Rendez-vous"
         title="Essayez votre future voiture"
         intro="Choisissez un créneau pour un essai ou un passage à l’agence. Vous recevez une confirmation par e-mail et un rappel la veille."
         crumbs={[{ label: 'Rendez-vous' }]}
       />
-      <div className="container-site grid gap-8 pb-16 lg:grid-cols-[1fr_340px]">
+      <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[1fr_340px]">
         <div className="card overflow-hidden p-6 sm:p-8">
           <AppointmentForm slots={slots} vehicleId={vehicle?.id} vehicleTitle={vehicle?.title} />
         </div>

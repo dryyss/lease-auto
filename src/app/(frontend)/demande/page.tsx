@@ -29,13 +29,13 @@ export default async function RequestPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero
+      <PageHero compact
         eyebrow="Demande de financement"
         title="Votre financement en 4 étapes"
         intro="Quelques minutes suffisent. Un conseiller étudie votre dossier et vous répond sous 48 h ouvrées."
         crumbs={[{ label: 'Demande de financement' }]}
       />
-      <div className="container-site grid gap-8 pb-16 lg:grid-cols-[1fr_340px]">
+      <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[1fr_340px]">
         <div className="card p-6 sm:p-8">
           <FinancingForm
             vehicles={vehicles.docs.map((v) => ({ id: v.id, title: v.title, price: v.price }))}

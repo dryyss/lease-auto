@@ -16,13 +16,13 @@ export const metadata: Metadata = {
 export default function TradeInPage() {
   return (
     <>
-      <PageHero
+      <PageHero compact
         eyebrow="Reprise"
         title="Estimez la reprise de votre véhicule"
         intro="Décrivez votre véhicule actuel, ajoutez quelques photos : nous vous envoyons une estimation sous 48 h. Le montant peut servir d’apport pour votre prochain véhicule."
         crumbs={[{ label: 'Reprise' }]}
       />
-      <div className="container-site grid gap-8 pb-16 lg:grid-cols-[1fr_340px]">
+      <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[1fr_340px]">
         <div className="card p-6 sm:p-8">
           <TradeInForm />
         </div>
