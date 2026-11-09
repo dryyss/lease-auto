@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouteTransition } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -21,7 +22,8 @@ export function DashAction({
   confirm?: string
 }) {
   const router = useRouter()
-  const [pending, setPending] = useState(false)
+  const { startRouteTransition } = useRouteTransition()
+  const [state, setState] = useState<'idle' | 'pending' | 'done'>('idle')
   const [error, setError] = useState('')
 
   return (
@@ -29,22 +31,29 @@ export function DashAction({
       <button
         type="button"
         className={tone === 'red' ? 'la-btn' : 'la-btn la-btn--ghost'}
-        disabled={pending}
-        aria-busy={pending}
+        disabled={state !== 'idle'}
+        aria-busy={state === 'pending'}
         onClick={async () => {
           if (confirm && !window.confirm(confirm)) return
-          setPending(true)
+          setState('pending')
           setError('')
-          const result = await RUN[kind](id).catch(() => ({ ok: false as const, error: 'Erreur réseau, réessayez.' }))
-          setPending(false)
+          let result: Awaited<ReturnType<(typeof RUN)[typeof kind]>>
+          try {
+            result = await RUN[kind](id)
+          } catch {
+            result = { ok: false, error: 'Le serveur ne répond pas. Rechargez la page puis réessayez.' }
+          }
           if (!result.ok) {
+            setState('idle')
             setError(result.error)
             return
           }
-          router.refresh()
+          // Confirmation visible, puis la ligne change de bloc au rafraîchissement (barre de chargement de l'admin).
+          setState('done')
+          startRouteTransition(() => router.refresh())
         }}
       >
-        {pending ? 'En cours…' : label}
+        {state === 'pending' ? 'En cours…' : state === 'done' ? '✓ Fait' : label}
       </button>
       {error ? (
         <span className="la-err" role="alert">

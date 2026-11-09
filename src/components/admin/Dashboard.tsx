@@ -1,4 +1,5 @@
 import config from '@payload-config'
+import { Link } from '@payloadcms/ui'
 import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 import type { ReactNode } from 'react'
@@ -230,18 +231,18 @@ export async function Dashboard() {
           </p>
         </div>
         <div className="la-head-side">
-          <a className="la-cta la-cta--ghost" href={`${REQ}?sort=-createdAt`}>Toutes les demandes</a>
+          <Link className="la-cta la-cta--ghost" href={`${REQ}?sort=-createdAt`}>Toutes les demandes</Link>
           {isAdmin && (
-            <a className="la-cta" href={`${CARS}/create`}>
+            <Link className="la-cta" href={`${CARS}/create`}>
               <Icon name="plus" /> Ajouter un véhicule
-            </a>
+            </Link>
           )}
         </div>
       </header>
 
       {/* ── Chiffres de l'activité (pas de doublon avec les listes ci-dessous) ── */}
       <section className="la-kpis" aria-label="Chiffres clés">
-        <a className="la-kpi" href={`${REQ}?sort=-createdAt`}>
+        <Link className="la-kpi" href={`${REQ}?sort=-createdAt`}>
           <span className="la-kpi-label">Demandes reçues</span>
           <span className="la-kpi-row">
             <span className="la-kpi-value">{chartTotal}</span>
@@ -255,24 +256,24 @@ export async function Dashboard() {
               <span key={d.from} className={i === 13 ? 'la-spark-today' : undefined} style={{ height: `${Math.max(6, (d.count / chartMax) * 100)}%`, opacity: d.count ? 1 : 0.35 }} />
             ))}
           </span>
-        </a>
-        <a className="la-kpi" href={`${REQ}?where[status][in]=approved,delivered,refused`}>
+        </Link>
+        <Link className="la-kpi" href={`${REQ}?where[status][in]=approved,delivered,refused`}>
           <span className="la-kpi-label">Taux d’accord</span>
           <span className="la-kpi-value">{approvalRate == null ? '–' : `${approvalRate} %`}</span>
           <span className="la-kpi-hint">{decided.length ? `sur ${plural(decided.length, 'dossier tranché', 'dossiers tranchés')}, 30 jours` : 'aucun dossier tranché sur 30 jours'}</span>
-        </a>
+        </Link>
         <div className="la-kpi">
           <span className="la-kpi-label">Première réponse</span>
           <span className="la-kpi-value">{avgReply == null ? '–' : duration(avgReply)}</span>
           <span className="la-kpi-hint">délai moyen, 30 jours</span>
         </div>
-        <a className="la-kpi" href={`${CARS}?where[status][equals]=available&where[_status][equals]=published`}>
+        <Link className="la-kpi" href={`${CARS}?where[status][equals]=available&where[_status][equals]=published`}>
           <span className="la-kpi-label">Véhicules en ligne</span>
           <span className="la-kpi-value">{available.totalDocs}</span>
           <span className="la-kpi-hint">
             {plural(reserved.totalDocs, 'réservé', 'réservés')} · {plural(soldMonth.totalDocs, 'vendu', 'vendus')} ce mois · {plural(drafts.totalDocs, 'brouillon')}
           </span>
-        </a>
+        </Link>
       </section>
 
       <div className="la-layout">
@@ -294,7 +295,7 @@ export async function Dashboard() {
                   )
                   return (
                     <li key={a.title}>
-                      {a.href ? <a className="la-line la-line--link" href={a.href}>{body}</a> : <div className="la-line">{body}</div>}
+                      {a.href ? <Link className="la-line la-line--link" href={a.href}>{body}</Link> : <div className="la-line">{body}</div>}
                     </li>
                   )
                 })}
@@ -360,10 +361,10 @@ export async function Dashboard() {
                           <li key={a.id} className={`la-appt${past && offset !== -1 ? ' la-appt--past' : ''}`}>
                             <span className="la-appt-time">{when}</span>
                             <div className="la-appt-body">
-                              <a className="la-appt-name" href={`${APPT}/${a.id}`}>
+                              <Link className="la-appt-name" href={`${APPT}/${a.id}`}>
                                 {a.name}
                                 <span className="la-tag">{KIND_LABELS[a.kind]}</span>
-                              </a>
+                              </Link>
                               {vehicle && <span className="la-meta la-ellipsis">{vehicle}</span>}
                               <div className="la-appt-actions">
                                 {/* Colonne étroite : téléphone en bouton, le numéro reste lisible au survol et par les lecteurs d'écran */}
@@ -390,11 +391,11 @@ export async function Dashboard() {
               <ul className="la-legend">
                 {STATUS.map((s, i) => (
                   <li key={s.key}>
-                    <a href={`${REQ}?where[status][equals]=${s.key}`}>
+                    <Link href={`${REQ}?where[status][equals]=${s.key}`}>
                       <span className="la-dot" style={{ background: s.color }} />
                       <span className="la-legend-label">{s.label}</span>
                       <b>{statusCounts[i].totalDocs}</b>
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -402,10 +403,10 @@ export async function Dashboard() {
               <ul className="la-legend">
                 {byType.map(({ t, n }) => (
                   <li key={t}>
-                    <a href={`${REQ}?where[type][equals]=${t}&sort=-createdAt`}>
+                    <Link href={`${REQ}?where[type][equals]=${t}&sort=-createdAt`}>
                       <span className="la-legend-label">{TYPE_LABELS[t]}</span>
                       <b>{n}</b>
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -417,7 +418,7 @@ export async function Dashboard() {
               <ul className="la-list">
                 {team.docs.map((u) => (
                   <li key={u.id}>
-                    <a className="la-line la-line--link" href={`${REQ}?where[assignedTo][equals]=${u.id}&where[status][in]=new,review,approved`}>
+                    <Link className="la-line la-line--link" href={`${REQ}?where[assignedTo][equals]=${u.id}&where[status][in]=new,review,approved`}>
                       <span className="la-avatar">{initials(u.name || '?')}</span>
                       <span className="la-line-main">
                         <strong>{u.name}</strong>
@@ -427,7 +428,7 @@ export async function Dashboard() {
                         </span>
                       </span>
                       <span className="la-line-side">{plural(load.get(u.id) ?? 0, 'dossier')}</span>
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -468,10 +469,10 @@ function Card({
           {note && <span className="la-card-note">{note}</span>}
         </h3>
         {link && (
-          <a className="la-more" href={link.href}>
+          <Link className="la-more" href={link.href}>
             {link.label}
             <Icon name="chevron" />
-          </a>
+          </Link>
         )}
       </header>
       {children}
@@ -483,7 +484,7 @@ function RequestRow({ r, late = false, showStatus = false, owner = null }: { r: 
   const [label, tone] = STATUS_TAG[r.status]
   return (
     <li className="la-row">
-      <a className="la-row-main" href={`${REQ}/${r.id}`}>
+      <Link className="la-row-main" href={`${REQ}/${r.id}`}>
         <span className="la-row-top">
           <strong className="la-row-name">{r.firstName} {r.lastName}</strong>
           {showStatus && <span className={`la-tag ${tone}`}>{label}</span>}
@@ -496,7 +497,7 @@ function RequestRow({ r, late = false, showStatus = false, owner = null }: { r: 
           {owner ? ` · ${owner}` : ''}
           {r.reference ? ` · ${r.reference}` : ''}
         </span>
-      </a>
+      </Link>
       <span className="la-row-actions">
         <a className="la-phone" href={tel(r.phone)}><Icon name="phone" />{r.phone}</a>
         <span className="la-row-btns">
