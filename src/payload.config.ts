@@ -41,6 +41,8 @@ export default buildConfig({
     components: {
       beforeDashboard: ['@/components/admin/Dashboard#Dashboard'],
       providers: ['@/components/admin/AdminFont#AdminFont'],
+      beforeNavLinks: ['@/components/admin/NavBrand#NavBrand'],
+      afterNavLinks: ['@/components/admin/NavBrand#NavSite'],
     },
   },
   // E-mails : Resend si la clé est fournie, sinon Payload les écrit dans la console (développement).
@@ -116,6 +118,7 @@ export default buildConfig({
     redirectsPlugin({
       collections: ['vehicles', 'articles', 'local-pages'],
       overrides: {
+        labels: { singular: 'Redirection', plural: 'Redirections' },
         admin: { group: 'Réglages', hidden: ({ user }) => !isAdmin(user) },
         access: { read: () => true, create: admins, update: admins, delete: admins },
       },
