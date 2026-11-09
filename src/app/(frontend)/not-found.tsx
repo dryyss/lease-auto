@@ -17,7 +17,7 @@ export default function NotFound() {
     <>
       <title>Page introuvable | Lease Auto</title>
       <PageHero compact eyebrow="Erreur 404" title="Cette page n’existe plus" intro="L’adresse a peut-être changé avec le nouveau site. Voici les pages les plus demandées." />
-      <div className="container-site py-10 pb-16 sm:py-14">
+      <div className="container-site pb-16">
         <ul className="grid gap-4 sm:grid-cols-3">
           {exits.map(({ href, icon: Icon, title, text }) => (
             <li key={href}>

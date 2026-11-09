@@ -16,7 +16,7 @@ export function breadcrumbJsonLd(crumbs: { label: string; href?: string }[]) {
   }).replace(/</g, '\\u003c')
 }
 
-/** Bandeau photo des pages intérieures : le fond du site, assombri, pour qu’aucune page ne s’ouvre sur du vide. */
+/** Bandeau photo des pages intérieures : le fond du site, assombri. Hauteur calée sur le contenu (pas sur l’écran), sinon vide au-dessus du titre sur grand écran. */
 export function PageHero({
   eyebrow,
   title,
@@ -33,7 +33,7 @@ export function PageHero({
   compact?: boolean
 }) {
   return (
-    <section className={`relative flex items-end overflow-hidden ${compact ? 'min-h-[34svh] pt-28 pb-8 sm:pt-32' : 'min-h-[42svh] pt-28 pb-10 sm:min-h-[46svh] sm:pt-32 sm:pb-12'}`}>
+    <section className={`relative mb-8 overflow-hidden sm:mb-10 ${compact ? 'pt-28 pb-8 sm:pt-32 sm:pb-10' : 'pt-28 pb-10 sm:pt-36 sm:pb-12'}`}>
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/55 to-black/30" />
       <div className="container-site relative text-white">
         {crumbs && (

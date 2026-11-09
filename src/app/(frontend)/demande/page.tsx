@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { FinancingForm } from '@/components/forms/FinancingForm'
 import { ContactAside } from '@/components/ui/ContactAside'
 import { PageHero } from '@/components/ui/PageHero'
+import { RequiredDocs } from '@/components/ui/RequiredDocs'
 import { payloadClient, visibleVehiclesWhere } from '@/lib/payload'
 
 export const metadata: Metadata = {
@@ -61,6 +62,7 @@ export default async function RequestPage({ searchParams }: Props) {
               )
             })}
           </div>
+          <RequiredDocs />
         </ContactAside>
       </div>
     </>

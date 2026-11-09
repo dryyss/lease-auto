@@ -38,7 +38,7 @@ export default async function FaqPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <PageHero eyebrow="FAQ" title="Questions fréquentes" intro="LOA, LLD, crédit, justificatifs, livraison et garantie. Cherchez votre question, ou posez-la à un conseiller." crumbs={[{ label: 'FAQ' }]} />
-      <div className="container-site grid items-start gap-8 py-10 pb-16 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[minmax(0,1fr)_320px]">
         {docs.length ? (
           <FaqExplorer
             categories={Object.entries(CATEGORIES).map(([key, label]) => ({ key, label }))}

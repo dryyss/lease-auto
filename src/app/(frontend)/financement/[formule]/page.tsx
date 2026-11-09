@@ -47,7 +47,7 @@ export default async function FormulaPage({ params }: Props) {
         </div>
       </PageHero>
 
-      <section className="section section-soft">
+      <section className="section section-soft pt-0 sm:pt-0 lg:pt-0">
         <div className="container-site">
           <SectionHeader eyebrow="Le principe" title="Comment ça marche ?" />
           <ol className="grid gap-5 md:grid-cols-3">

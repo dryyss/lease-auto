@@ -99,7 +99,7 @@ export async function Catalog({ params, brand, model }: { params: CatalogParams;
         { label: model?.name ?? brand?.name ?? 'Véhicules' },
       ]}
     />
-    <div className="container-site py-8 pb-16 sm:py-10">
+    <div className="container-site pb-16">
       <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
         {/* Filtres : simple formulaire GET, fonctionne même sans JavaScript */}
         <div className="card h-fit p-5 lg:sticky lg:top-28">

@@ -16,7 +16,9 @@ const financing = [
 ]
 
 const links = [
+  { label: 'Accueil', href: '/' },
   { label: 'Nos véhicules', href: '/vehicules' },
+  { label: 'Simulateur', href: '/simulateur' },
   { label: 'Reprise', href: '/reprise' },
   { label: 'L’agence', href: '/agence' },
   { label: 'Contact', href: '/contact' },
@@ -41,9 +43,9 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
     setDropdown(false)
   }, [pathname])
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+  const isActive = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(`${href}/`))
   const linkClass = (href: string) =>
-    `shrink-0 rounded-lg px-2.5 py-2 text-[15px] font-medium whitespace-nowrap transition-colors xl:px-3 ${
+    `shrink-0 rounded-lg px-2.5 py-2 text-[15px] font-medium whitespace-nowrap transition-colors xl:px-2 2xl:px-3 ${
       isActive(href) ? 'text-accent' : 'text-gray-700 hover:text-primary'
     }`
 
@@ -60,12 +62,14 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
           </Link>
 
           <div className="hidden items-center gap-0.5 xl:flex">
-            <Link href={links[0].href} className={linkClass(links[0].href)}>
-              {links[0].label}
-            </Link>
+            {links.slice(0, 2).map((l) => (
+              <Link key={l.href} href={l.href} className={linkClass(l.href)}>
+                {l.label}
+              </Link>
+            ))}
 
             <div
-              className="relative"
+              className="relative shrink-0"
               onMouseEnter={() => {
                 clearTimeout(timer.current)
                 setDropdown(true)
@@ -105,7 +109,7 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
               </div>
             </div>
 
-            {links.slice(1).map((l) => (
+            {links.slice(2).map((l) => (
               <Link key={l.href} href={l.href} className={linkClass(l.href)}>
                 {l.label}
               </Link>
@@ -120,9 +124,9 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
               </a>
             )}
             <FavoritesLink />
-            <Link href="/admin" className="btn-dark hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
+            <Link href="/admin" aria-label="Accéder à mon espace" className="btn-dark hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
               <UserRound className="size-4" aria-hidden />
-              <span className="2xl:hidden">Mon espace</span>
+              <span className="xl:hidden">Mon espace</span>
               <span className="hidden 2xl:inline">Accéder à mon espace</span>
             </Link>
             <Link href="/demande" className="btn-primary hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
@@ -144,7 +148,7 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
 
         <div className={`transition-all duration-300 xl:hidden ${mobileOpen ? 'max-h-[calc(100dvh-4.5rem)] overflow-y-auto pb-6 opacity-100' : 'max-h-0 overflow-hidden opacity-0'}`}>
           <div className="space-y-1 border-t border-line pt-4">
-            {[links[0], ...financing.map((f) => ({ label: f.name === 'Simulateur' ? 'Simulateur' : `Financement ${f.name}`, href: f.href })), ...links.slice(1)].map((item) => (
+            {[...links.slice(0, 2), ...financing.filter((f) => f.href !== '/simulateur').map((f) => ({ label: `Financement ${f.name}`, href: f.href })), ...links.slice(2)].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

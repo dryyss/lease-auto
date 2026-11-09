@@ -6,20 +6,13 @@ import { useRef, useState } from 'react'
 
 import { submitRequest } from '@/app/(frontend)/actions'
 
+import { BUSINESS_DOCS, HOSTED_DOCS, isBusinessProfile, PERSONAL_DOCS } from '@/lib/required-documents'
+
 import { ActionForm, compressImage, Consents, Field, Select } from './Form'
 
 type VehicleOption = { id: number; title: string; price: number }
 
 const STEPS = ['Votre projet', 'Votre situation', 'Vos coordonnées', 'Justificatifs'] as const
-
-const DOCS = [
-  { kind: 'id', label: 'Pièce d’identité (recto/verso)' },
-  { kind: 'address', label: 'Justificatif de domicile de moins de 3 mois' },
-  { kind: 'payslips', label: '3 derniers bulletins de salaire' },
-  { kind: 'tax', label: 'Dernier avis d’imposition' },
-  { kind: 'rib', label: 'RIB' },
-  { kind: 'kbis', label: 'Kbis ou avis SIREN (pros)' },
-] as const
 
 /** PUB-12 : demande de financement en 4 étapes, avec envoi facultatif des justificatifs. */
 export function FinancingForm({
@@ -30,7 +23,11 @@ export function FinancingForm({
   defaults: { vehicle?: string; formula?: string; months?: string; deposit?: string }
 }) {
   const [step, setStep] = useState(0)
+  const [profile, setProfile] = useState('')
+  const [hosted, setHosted] = useState(false)
   const steps = useRef<(HTMLDivElement | null)[]>([])
+  const business = isBusinessProfile(profile)
+  const docs = business ? BUSINESS_DOCS : [...PERSONAL_DOCS, ...(hosted ? HOSTED_DOCS : [])]
 
   const next = () => {
     const current = steps.current[step]
@@ -117,7 +114,15 @@ export function FinancingForm({
         </div>
       </div>
 
-      <div ref={(el) => void (steps.current[1] = el)} hidden={step !== 1} className="space-y-4">
+      <div
+        ref={(el) => void (steps.current[1] = el)}
+        hidden={step !== 1}
+        className="space-y-4"
+        onChange={(e) => {
+          const t = e.target as unknown as HTMLSelectElement
+          if (t.name === 'profile') setProfile(t.value)
+        }}
+      >
         <Select
           label="Situation professionnelle"
           name="profile"
@@ -154,16 +159,30 @@ export function FinancingForm({
           Facultatif, mais cela accélère l’étude. Photos ou PDF lisibles, 4 Mo au total (les photos sont compressées automatiquement). Vous pourrez
           aussi les envoyer plus tard en réponse à notre e-mail.
         </p>
+        <p className="text-sm font-bold text-primary">{business ? 'Pièces pour les indépendants et les entreprises' : 'Pièces pour les particuliers'}</p>
+        {!business && (
+          <label className="flex items-center gap-2 py-1 text-sm text-ink-2">
+            <input type="checkbox" checked={hosted} onChange={(e) => setHosted(e.target.checked)} className="size-4 shrink-0 accent-accent" />
+            Je suis hébergé(e) par un proche
+          </label>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
-          {DOCS.map((d) => (
-            <label key={d.kind} className="card flex cursor-pointer flex-col gap-2 p-4 text-sm transition hover:border-accent">
-              <span className="flex items-center gap-2 font-bold text-primary">
-                <FileUp className="size-4 text-accent" aria-hidden />
-                {d.label}
-              </span>
-              <input type="file" data-kind={d.kind} accept="application/pdf,image/*" multiple className="text-xs text-ink-2 file:mr-3 file:rounded-xl file:border-0 file:bg-accent-soft file:px-3 file:py-2 file:font-bold file:text-accent" />
-            </label>
-          ))}
+          {docs.map((d) =>
+            d.kind ? (
+              <label key={d.label} className="card flex cursor-pointer flex-col gap-2 p-4 text-sm transition hover:border-accent">
+                <span className="flex items-start gap-2 font-bold text-primary">
+                  <FileUp className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
+                  {d.label}
+                </span>
+                <input type="file" data-kind={d.kind} accept="application/pdf,image/*" multiple className="text-xs text-ink-2 file:mr-3 file:rounded-xl file:border-0 file:bg-accent-soft file:px-3 file:py-2 file:font-bold file:text-accent" />
+              </label>
+            ) : (
+              <div key={d.label} className="rounded-2xl border border-dashed border-line p-4 text-sm">
+                <p className="font-bold text-primary">{d.label}</p>
+                <p className="mt-1 text-ink-2">{d.note}</p>
+              </div>
+            ),
+          )}
         </div>
         <Consents />
       </div>
