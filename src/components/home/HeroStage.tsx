@@ -87,23 +87,29 @@ export function HeroStage({
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25" />
 
-      <div className="container-site relative z-10 grid w-full items-end gap-10 px-4 pt-32 pb-10 lg:grid-cols-[1.15fr_minmax(280px,420px)] lg:pb-14">
+      {/* pb-24 : la carte reste au-dessus de la barre d'appel (mobile) et du bouton « Être rappelé » (tablette, ordinateur) */}
+      <div className="container-site relative z-10 grid w-full items-end gap-8 px-4 pt-28 pb-24 sm:gap-10 sm:pt-32 lg:grid-cols-[1.15fr_minmax(280px,420px)]">
         <div className="text-white">
-          <p className="mb-4 text-[11px] font-bold tracking-[0.32em] text-white/75 uppercase">Épinay-sur-Seine · stock en direct</p>
-          <h1 className="max-w-xl font-black tracking-tight text-balance uppercase" style={{ fontSize: 'clamp(40px, 5.2vw, 72px)', lineHeight: 0.92 }}>
-            {title}
+          {/* SEO : le slogan seul ne dit pas ce que vend le site, la ligne du dessus porte les mots-clés du H1 */}
+          <h1 className="max-w-xl">
+            <span className="mb-4 block text-[11px] font-bold tracking-[0.2em] text-white/75 uppercase sm:tracking-[0.28em]">
+              Voitures d’occasion en LOA, LLD et crédit · Épinay-sur-Seine
+            </span>
+            <span className="block font-black tracking-tight text-balance uppercase" style={{ fontSize: 'clamp(40px, 5.2vw, 72px)', lineHeight: 0.92 }}>
+              {title}
+            </span>
           </h1>
           {subtitle && <p className="mt-5 max-w-md text-base text-white/80 sm:text-lg">{subtitle}</p>}
         </div>
 
         <div className="rounded-3xl border border-white/20 bg-white/10 p-5 text-white shadow-2xl backdrop-blur-md sm:p-6">
-          <p className="text-[11px] font-bold tracking-[0.22em] text-white/70 uppercase">À partir de</p>
-          <p className="mt-1 font-black tracking-tight tabular-nums" style={{ fontSize: 'clamp(52px, 6vw, 76px)', lineHeight: 0.9 }}>
-            {formatEUR(amount)}
-            <span className="ml-1 text-lg font-bold text-white/70">/mois*</span>
-          </p>
           {car ? (
             <>
+              <p className="text-[11px] font-bold tracking-[0.22em] text-white/70 uppercase">À partir de</p>
+              <p className="mt-1 font-black tracking-tight tabular-nums" style={{ fontSize: 'clamp(52px, 6vw, 76px)', lineHeight: 0.9 }}>
+                {formatEUR(amount)}
+                <span className="ml-1 text-lg font-bold text-white/70">/mois*</span>
+              </p>
               <p className="mt-3 text-sm font-semibold text-white/90">{car.title}</p>
               <p className="text-xs text-white/60">{formatEUR(car.price)} TTC</p>
               {stock.length > 1 && (
@@ -129,9 +135,18 @@ export function HeroStage({
               </Link>
             </>
           ) : (
-            <Link href="/vehicules" className="btn-primary mt-5 w-full rounded-full">
-              Voir les véhicules <ArrowRight className="size-4" aria-hidden />
-            </Link>
+            // Stock vide ou sans mensualité : pas de « 0 €/mois », on capte la demande à la place.
+            <>
+              <p className="text-[11px] font-bold tracking-[0.22em] text-white/70 uppercase">Arrivages chaque semaine</p>
+              <p className="mt-2 text-2xl leading-tight font-black sm:text-3xl">Dites-nous ce que vous cherchez</p>
+              <p className="mt-2 text-sm text-white/80">Budget, formule, modèle : nous trouvons le véhicule et le financement qui vous conviennent.</p>
+              <Link href="/demande" className="btn-primary mt-5 w-full rounded-full">
+                Faire ma demande <ArrowRight className="size-4" aria-hidden />
+              </Link>
+              <Link href="/vehicules" className="mt-3 block py-1 text-center text-sm font-bold text-white/85 hover:text-white">
+                Voir les véhicules
+              </Link>
+            </>
           )}
         </div>
       </div>

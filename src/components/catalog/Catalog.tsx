@@ -82,7 +82,9 @@ export async function Catalog({ params, brand, model }: { params: CatalogParams;
   const title = model ? `${brand?.name} ${model.name} d’occasion` : brand ? `${brand.name} d’occasion` : 'Nos véhicules d’occasion'
   const intro = model?.intro ?? brand?.intro
 
-  const countLabel = `${result.totalDocs} véhicule${result.totalDocs > 1 ? 's' : ''} contrôlé${result.totalDocs > 1 ? 's' : ''}, garanti${result.totalDocs > 1 ? 's' : ''} et finançable${result.totalDocs > 1 ? 's' : ''} en LOA, LLD ou crédit.`
+  const countLabel = !result.totalDocs
+    ? 'De nouveaux véhicules arrivent chaque semaine : créez une alerte ci-dessous pour être prévenu en premier.'
+    : `${result.totalDocs} véhicule${result.totalDocs > 1 ? 's' : ''} contrôlé${result.totalDocs > 1 ? 's' : ''}, garanti${result.totalDocs > 1 ? 's' : ''} et finançable${result.totalDocs > 1 ? 's' : ''} en LOA, LLD ou crédit.`
 
   return (
     <>

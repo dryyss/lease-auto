@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { cache } from 'react'
 
 import { CreditNotice } from '@/components/ui/CreditNotice'
+import { breadcrumbJsonLd } from '@/components/ui/PageHero'
 import { FavoriteButton, ShareButtons } from '@/components/vehicles/Favorites'
 import { Gallery } from '@/components/vehicles/Gallery'
 import { VehicleCard } from '@/components/vehicles/VehicleCard'
@@ -106,10 +107,21 @@ export default async function VehiclePage({ params }: Props) {
   return (
     <div className="container-site pt-28 pb-16 sm:pt-32">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
-      <nav aria-label="Fil d’Ariane" className="mb-4 text-xs text-ink-3">
-        <Link href="/vehicules" className="hover:text-primary">Véhicules</Link> /{' '}
-        <Link href={`/vehicules/${brand.slug}`} className="hover:text-primary">{brand.name}</Link> /{' '}
-        <Link href={`/vehicules/${brand.slug}/${model.slug}`} className="hover:text-primary">{model.name}</Link>
+      <nav aria-label="Fil d’Ariane" className="mb-3 text-xs text-ink-3">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: breadcrumbJsonLd([
+              { label: 'Véhicules', href: '/vehicules' },
+              { label: brand.name, href: `/vehicules/${brand.slug}` },
+              { label: model.name, href: `/vehicules/${brand.slug}/${model.slug}` },
+              { label: v.title },
+            ]),
+          }}
+        />
+        <Link href="/vehicules" className="inline-block py-1.5 hover:text-primary">Véhicules</Link> /{' '}
+        <Link href={`/vehicules/${brand.slug}`} className="inline-block py-1.5 hover:text-primary">{brand.name}</Link> /{' '}
+        <Link href={`/vehicules/${brand.slug}/${model.slug}`} className="inline-block py-1.5 hover:text-primary">{model.name}</Link>
       </nav>
 
       <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-start lg:gap-10">

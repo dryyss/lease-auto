@@ -55,13 +55,11 @@ export default async function HomePage() {
       telephone: c?.phone,
       email: c?.email,
       address: { '@type': 'PostalAddress', streetAddress: c?.address, postalCode: c?.postalCode, addressLocality: c?.city, addressCountry: 'FR' },
-      ...(reviews.docs.length && {
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: (reviews.docs.reduce((s, r) => s + r.rating, 0) / reviews.docs.length).toFixed(1),
-          reviewCount: reviews.docs.length,
-        },
-      }),
+      logo: `${process.env.NEXT_PUBLIC_SERVER_URL ?? ''}/images/logo-lease-auto.png`,
+      image: `${process.env.NEXT_PUBLIC_SERVER_URL ?? ''}/images/hero.jpg`,
+      ...(c?.mapsUrl && { hasMap: c.mapsUrl }),
+      // Pas d'aggregateRating : la note ne porterait que sur les avis choisis pour l'accueil,
+      // ce que Google interdit (avis sélectionnés, auto-attribués) et peut sanctionner.
     },
     faqs.length && {
       '@context': 'https://schema.org',

@@ -245,8 +245,8 @@ export function NewsletterForm() {
           <Send className="size-4" aria-hidden />
         </button>
       </div>
-      <label className="mt-2.5 flex items-start gap-2 text-[11px] text-white/55">
-        <input type="checkbox" name="consent" required className="mt-0.5 accent-accent" />
+      <label className="mt-2.5 flex cursor-pointer items-start gap-2 py-1 text-xs text-white/55">
+        <input type="checkbox" name="consent" required className="mt-0.5 size-4 shrink-0 accent-accent" />
         J’accepte de recevoir les nouveautés et offres Lease Auto.
       </label>
     </ActionForm>

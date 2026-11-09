@@ -6,7 +6,7 @@ import { NewsletterForm } from '@/components/forms/SimpleForms'
 import { telHref } from '@/lib/format'
 import { getSettings, payloadClient } from '@/lib/payload'
 
-const linkClass = 'text-white/60 transition-colors hover:text-white'
+const linkClass = 'inline-block py-1.5 text-white/60 transition-colors hover:text-white'
 
 export async function Footer() {
   const settings = await getSettings()
@@ -55,12 +55,12 @@ export async function Footer() {
               Véhicules d’occasion contrôlés et garantis, financés en LOA, LLD ou crédit, livrés partout en France depuis notre
               agence d’Épinay-sur-Seine.
             </p>
-            <ul className="space-y-2.5 text-sm text-white/70">
+            <ul className="space-y-1 text-sm text-white/70">
               {c.address && (
                 <li className="flex gap-2.5">
-                  <MapPin className="mt-0.5 size-4 shrink-0 text-accent-on-dark" aria-hidden />
+                  <MapPin className="mt-1.5 size-4 shrink-0 text-accent-on-dark" aria-hidden />
                   {c.mapsUrl ? (
-                    <a href={c.mapsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+                    <a href={c.mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-block py-1 hover:text-white">
                       {c.address}, {c.postalCode} {c.city}
                     </a>
                   ) : (
@@ -72,16 +72,16 @@ export async function Footer() {
               )}
               {c.phone && (
                 <li className="flex gap-2.5">
-                  <Phone className="mt-0.5 size-4 shrink-0 text-accent-on-dark" aria-hidden />
-                  <a href={telHref(c.phone)} className="hover:text-white">
+                  <Phone className="mt-1.5 size-4 shrink-0 text-accent-on-dark" aria-hidden />
+                  <a href={telHref(c.phone)} className="inline-block py-1 hover:text-white">
                     {c.phone}
                   </a>
                 </li>
               )}
               {c.email && (
                 <li className="flex gap-2.5">
-                  <Mail className="mt-0.5 size-4 shrink-0 text-accent-on-dark" aria-hidden />
-                  <a href={`mailto:${c.email}`} className="hover:text-white">
+                  <Mail className="mt-1.5 size-4 shrink-0 text-accent-on-dark" aria-hidden />
+                  <a href={`mailto:${c.email}`} className="inline-block py-1 hover:text-white">
                     {c.email}
                   </a>
                 </li>
@@ -118,13 +118,13 @@ export async function Footer() {
             <FooterColumn title="Horaires">
               {(settings.openingHours ?? []).length > 0 ? (
                 settings.openingHours!.map((h) => (
-                  <li key={h.id ?? h.days} className="text-white/60">
+                  <li key={h.id ?? h.days} className="py-1 text-white/60">
                     <span className="block font-semibold text-white/80">{h.days}</span>
                     {h.hours}
                   </li>
                 ))
               ) : (
-                <li className="flex gap-2 text-white/60">
+                <li className="flex gap-2 py-1 text-white/60">
                   <Clock className="mt-0.5 size-4 shrink-0" aria-hidden />
                   Sur rendez-vous
                 </li>
@@ -136,7 +136,7 @@ export async function Footer() {
         {localPages.docs.length > 0 && (
           <div className="border-b border-white/10 py-7 text-sm">
             <p className="mb-3 text-xs font-bold tracking-widest text-white/80 uppercase">Nous livrons aussi</p>
-            <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            <ul className="flex flex-wrap gap-x-5">
               {localPages.docs.map((p) => (
                 <li key={p.id}><Link href={`/voiture-occasion/${p.slug}`} className={linkClass}>{p.city}</Link></li>
               ))}
@@ -152,12 +152,12 @@ export async function Footer() {
             {c.rcs && <span>RCS {c.rcs}</span>}
             {c.orias && <span>Intermédiaire en opérations de banque, ORIAS n° {c.orias} (orias.fr)</span>}
           </p>
-          <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <li><Link href="/mentions-legales" className="hover:text-white">Mentions légales</Link></li>
-            <li><Link href="/confidentialite" className="hover:text-white">Confidentialité</Link></li>
-            <li><Link href="/cookies" className="hover:text-white">Cookies</Link></li>
-            <li><Link href="/conditions-generales" className="hover:text-white">Conditions générales</Link></li>
-            <li className="flex items-center gap-1.5"><ShieldCheck className="size-3.5" aria-hidden /> © {new Date().getFullYear()} Lease Auto</li>
+          <ul className="flex flex-wrap items-center gap-x-4">
+            <li><Link href="/mentions-legales" className="inline-block py-1 hover:text-white">Mentions légales</Link></li>
+            <li><Link href="/confidentialite" className="inline-block py-1 hover:text-white">Confidentialité</Link></li>
+            <li><Link href="/cookies" className="inline-block py-1 hover:text-white">Cookies</Link></li>
+            <li><Link href="/conditions-generales" className="inline-block py-1 hover:text-white">Conditions générales</Link></li>
+            <li className="flex items-center gap-1.5 py-1"><ShieldCheck className="size-3.5" aria-hidden /> © {new Date().getFullYear()} Lease Auto</li>
           </ul>
         </div>
 
@@ -182,7 +182,7 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
   return (
     <div>
       <p className="mb-4 text-xs font-bold tracking-widest text-white/80 uppercase">{title}</p>
-      <ul className="space-y-2.5 text-sm">{children}</ul>
+      <ul className="space-y-1 text-sm">{children}</ul>
     </div>
   )
 }

@@ -66,7 +66,7 @@ export function FormulasSection() {
         />
         <div className="grid gap-6 md:grid-cols-3">
           {FORMULAS.map(({ href, icon: Icon, name, title, text, points }) => (
-            <Link key={href} href={href} className="group card hover-lift flex flex-col p-7">
+            <Link key={href} href={href} className="group card hover-lift flex flex-col p-6 md:p-5 lg:p-7">
               <span className="mb-5 flex size-12 items-center justify-center rounded-2xl bg-accent-soft text-accent transition-colors group-hover:bg-accent group-hover:text-white">
                 <Icon className="size-6" aria-hidden />
               </span>
@@ -75,8 +75,8 @@ export function FormulasSection() {
               <p className="mb-5 text-sm leading-relaxed text-ink-2">{text}</p>
               <ul className="mb-6 space-y-2 text-sm text-ink-2">
                 {points.map((p) => (
-                  <li key={p} className="flex items-center gap-2">
-                    <span className="size-1.5 rounded-full bg-accent" aria-hidden />
+                  <li key={p} className="flex items-start gap-2">
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
                     {p}
                   </li>
                 ))}

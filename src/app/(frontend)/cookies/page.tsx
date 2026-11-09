@@ -3,7 +3,11 @@ import type { Metadata } from 'next'
 import { CookieSettingsButton } from '@/components/layout/CookieBanner'
 import { PageHero } from '@/components/ui/PageHero'
 
-export const metadata: Metadata = { title: 'Gestion des cookies', alternates: { canonical: '/cookies' } }
+export const metadata: Metadata = {
+  title: 'Gestion des cookies',
+  description: 'Cookies utilisés sur le site Lease Auto, mesure d’audience soumise à votre accord et modification de votre choix à tout moment.',
+  alternates: { canonical: '/cookies' },
+}
 
 /** CONF-02 : explication des cookies et modification du choix à tout moment. */
 export default function CookiesPage() {

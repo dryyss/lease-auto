@@ -7,8 +7,8 @@ import { PageHero } from '@/components/ui/PageHero'
 import { CONTACT } from '@/lib/page-content'
 
 export const metadata: Metadata = {
-  title: 'Contact',
-  description: 'Contactez Lease Auto à Épinay-sur-Seine : téléphone, WhatsApp, e-mail ou demande de rappel.',
+  title: 'Contacter Lease Auto à Épinay-sur-Seine',
+  description: 'Contactez Lease Auto à Épinay-sur-Seine (93) : téléphone, WhatsApp, e-mail ou rappel gratuit par un conseiller pour votre projet de voiture d’occasion financée.',
   alternates: { canonical: '/contact' },
 }
 
