@@ -19,7 +19,9 @@
     "create-admin": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/create-admin.ts",
     "seed:demo": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-demo.ts",
     "automations": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/automations.ts",
-    "seed:content": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-content.ts"
+    "seed:content": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-content.ts",
+    "seed:exemples": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed-exemples.ts",
+    "sync:avis": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/sync-google-reviews.ts"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "4.33.0",
