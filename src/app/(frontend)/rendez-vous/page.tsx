@@ -4,6 +4,7 @@ import { CardsSection, QuestionsSection } from '@/components/content/Blocks'
 import { AppointmentForm } from '@/components/forms/SimpleForms'
 import { ContactAside } from '@/components/ui/ContactAside'
 import { PageHero } from '@/components/ui/PageHero'
+import { emailEnabled } from '@/lib/services'
 import { availableSlots } from '@/lib/agenda'
 import { APPOINTMENT } from '@/lib/page-content'
 import { payloadClient } from '@/lib/payload'
@@ -33,7 +34,7 @@ export default async function AppointmentPage({ searchParams }: Props) {
       <PageHero compact
         eyebrow="Rendez-vous"
         title="Essayez votre future voiture"
-        intro="Choisissez un créneau pour un essai ou un passage à l’agence. Vous recevez une confirmation par e-mail et un rappel la veille."
+        intro={`Choisissez un créneau pour un essai ou un passage à l’agence.${emailEnabled() ? ' Vous recevez une confirmation par e-mail et un rappel la veille.' : ''}`}
         crumbs={[{ label: 'Rendez-vous' }]}
       />
       <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[1fr_340px]">

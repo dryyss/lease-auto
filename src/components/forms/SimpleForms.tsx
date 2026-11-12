@@ -66,7 +66,7 @@ export function ContactForm({ callback = false, vehicleId }: { callback?: boolea
 }
 
 /** PUB-13 : estimation de reprise avec photos. */
-export function TradeInForm() {
+export function TradeInForm({ uploads }: { uploads: boolean }) {
   return (
     <ActionForm
       action={submitRequest}
@@ -79,6 +79,7 @@ export function TradeInForm() {
         <>
           <p className="mb-2 text-2xl font-black text-primary">Demande d’estimation envoyée</p>
           <p className="text-ink-2">Référence {r.reference}. Nous revenons vers vous avec une estimation sous 48 h ouvrées.</p>
+          {r.message && <p className="mt-2 text-ink-2">{r.message}</p>}
         </>
       )}
       className="space-y-4"
@@ -92,12 +93,19 @@ export function TradeInForm() {
         <Field label="Kilométrage" name="tiMileage" type="number" inputMode="numeric" required min={0} />
       </div>
       <Field label="État, entretien, options (facultatif)" name="message" type="textarea" placeholder="Ex. carnet d’entretien à jour, rayure sur l’aile arrière…" />
-      <label className="card flex cursor-pointer flex-col gap-2 p-4 text-sm">
-        <span className="flex items-center gap-2 font-bold text-primary">
-          <Camera className="size-4 text-accent" aria-hidden /> Photos (8 maximum : avant, arrière, côtés, intérieur, compteur)
-        </span>
-        <input type="file" name="photos" accept="image/*" multiple className="text-xs file:mr-3 file:rounded-xl file:border-0 file:bg-accent-soft file:px-3 file:py-2 file:font-bold file:text-accent" />
-      </label>
+      {uploads ? (
+        <label className="card flex cursor-pointer flex-col gap-2 p-4 text-sm">
+          <span className="flex items-center gap-2 font-bold text-primary">
+            <Camera className="size-4 text-accent" aria-hidden /> Photos (8 maximum : avant, arrière, côtés, intérieur, compteur)
+          </span>
+          <input type="file" name="photos" accept="image/*" multiple className="text-xs file:mr-3 file:rounded-xl file:border-0 file:bg-accent-soft file:px-3 file:py-2 file:font-bold file:text-accent" />
+        </label>
+      ) : (
+        <p className="flex gap-2 rounded-2xl bg-soft p-4 text-sm text-ink-2">
+          <Camera className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
+          Préparez quelques photos (avant, arrière, côtés, intérieur, compteur) : un conseiller vous indique comment nous les envoyer.
+        </p>
+      )}
       <p className="eyebrow pt-2">Vos coordonnées</p>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Prénom" name="firstName" required autoComplete="given-name" />

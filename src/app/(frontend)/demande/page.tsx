@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { FinancingForm } from '@/components/forms/FinancingForm'
 import { ContactAside } from '@/components/ui/ContactAside'
 import { PageHero } from '@/components/ui/PageHero'
+import { uploadsEnabled } from '@/lib/services'
 import { RequiredDocs } from '@/components/ui/RequiredDocs'
 import { payloadClient, visibleVehiclesWhere } from '@/lib/payload'
 
@@ -41,13 +42,16 @@ export default async function RequestPage({ searchParams }: Props) {
           <FinancingForm
             vehicles={vehicles.docs.map((v) => ({ id: v.id, title: v.title, price: v.price }))}
             defaults={{ vehicle: sp.vehicule, formula: sp.formule, months: sp.duree, deposit: sp.apport }}
+            uploads={uploadsEnabled()}
           />
         </div>
         <ContactAside>
           <div className="card space-y-4 p-6 text-sm">
             {[
               [Timer, 'Réponse sous 48 h', 'Accord de principe après réception du dossier complet.'],
-              [FileCheck2, 'Dossier en ligne', 'Justificatifs déposés de façon sécurisée, supprimés après étude.'],
+              uploadsEnabled()
+                ? [FileCheck2, 'Dossier en ligne', 'Justificatifs déposés de façon sécurisée, supprimés après étude.']
+                : [FileCheck2, 'Dossier simple', 'Un conseiller vous indique comment transmettre vos pièces.'],
               [ShieldCheck, 'Sans engagement', 'La demande ne vous engage à rien.'],
             ].map(([Icon, title, text]) => {
               const I = Icon as typeof Timer

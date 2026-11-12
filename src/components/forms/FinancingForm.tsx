@@ -18,9 +18,12 @@ const STEPS = ['Votre projet', 'Votre situation', 'Vos coordonnées', 'Justifica
 export function FinancingForm({
   vehicles,
   defaults,
+  uploads,
 }: {
   vehicles: VehicleOption[]
   defaults: { vehicle?: string; formula?: string; months?: string; deposit?: string }
+  /** false tant que le stockage des fichiers n'est pas branché : la liste des pièces s'affiche sans envoi. */
+  uploads: boolean
 }) {
   const [step, setStep] = useState(0)
   const [profile, setProfile] = useState('')
@@ -58,9 +61,9 @@ export function FinancingForm({
         <>
           <p className="mb-2 text-2xl font-black text-primary">Demande envoyée !</p>
           <p className="text-ink-2">
-            Votre référence : <strong className="text-primary">{r.reference}</strong>. Un récapitulatif vous a été envoyé par e-mail et un conseiller vous
-            répond sous 48 h ouvrées.
+            Votre référence : <strong className="text-primary">{r.reference}</strong>. Un conseiller vous répond sous 48 h ouvrées.
           </p>
+          {r.message && <p className="mt-2 text-ink-2">{r.message}</p>}
           <Link href="/vehicules" className="btn-ghost mt-6">
             Retour aux véhicules
           </Link>
@@ -156,8 +159,9 @@ export function FinancingForm({
 
       <div ref={(el) => void (steps.current[3] = el)} hidden={step !== 3} className="space-y-4">
         <p className="rounded-2xl bg-soft p-4 text-sm text-ink-2">
-          Facultatif, mais cela accélère l’étude. Photos ou PDF lisibles, 4 Mo au total (les photos sont compressées automatiquement). Vous pourrez
-          aussi les envoyer plus tard en réponse à notre e-mail.
+          {uploads
+            ? 'Facultatif, mais cela accélère l’étude. Photos ou PDF lisibles, 4 Mo au total (les photos sont compressées automatiquement). Vous pourrez aussi les envoyer plus tard.'
+            : 'Préparez ces pièces : après l’envoi de votre demande, un conseiller vous indique comment nous les transmettre.'}
         </p>
         <p className="text-sm font-bold text-primary">{business ? 'Pièces pour les indépendants et les entreprises' : 'Pièces pour les particuliers'}</p>
         {!business && (
@@ -168,7 +172,7 @@ export function FinancingForm({
         )}
         <div className="grid gap-3 sm:grid-cols-2">
           {docs.map((d) =>
-            d.kind ? (
+            uploads && d.kind ? (
               <label key={d.label} className="card flex cursor-pointer flex-col gap-2 p-4 text-sm transition hover:border-accent">
                 <span className="flex items-start gap-2 font-bold text-primary">
                   <FileUp className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
@@ -179,7 +183,7 @@ export function FinancingForm({
             ) : (
               <div key={d.label} className="rounded-2xl border border-dashed border-line p-4 text-sm">
                 <p className="font-bold text-primary">{d.label}</p>
-                <p className="mt-1 text-ink-2">{d.note}</p>
+                {d.note && <p className="mt-1 text-ink-2">{d.note}</p>}
               </div>
             ),
           )}

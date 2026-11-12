@@ -3,6 +3,7 @@
 import { isSlotAvailable } from '@/lib/agenda'
 import { notifyNewRequest } from '@/lib/notifications'
 import { payloadClient } from '@/lib/payload'
+import { emailEnabled, uploadsEnabled } from '@/lib/services'
 import { checkSpam } from '@/lib/spam'
 import type { Document, Request } from '@/payload-types'
 
@@ -26,7 +27,7 @@ function readFiles(form: FormData, field: string): File[] | string {
   const files = form.getAll(field).filter((f): f is File => f instanceof File && f.size > 0)
   if (files.length > MAX_FILES) return `${MAX_FILES} fichiers maximum.`
   if (files.reduce((s, f) => s + f.size, 0) > MAX_TOTAL_BYTES)
-    return 'Fichiers trop lourds (4 Mo au total). Envoyez le reste en réponse à l’e-mail de confirmation.'
+    return 'Fichiers trop lourds (4 Mo au total). Gardez le reste : un conseiller vous indiquera comment nous l’envoyer.'
   if (files.some((f) => !ACCEPTED.includes(f.type))) return 'Formats acceptés : PDF, JPG, PNG, HEIC.'
   return files
 }
@@ -48,7 +49,8 @@ export async function submitRequest(form: FormData): Promise<ActionResult> {
   if (!isPhone(phone)) return { ok: false, error: 'Numéro de téléphone invalide.' }
   if (form.get('privacy') !== 'on') return { ok: false, error: 'Merci d’accepter la politique de confidentialité.' }
 
-  const files = readFiles(form, type === 'tradein' ? 'photos' : 'documents')
+  // Sans stockage de fichiers, les pièces ne sont pas proposées : on ignore ce qui arriverait quand même.
+  const files = uploadsEnabled() ? readFiles(form, type === 'tradein' ? 'photos' : 'documents') : []
   if (typeof files === 'string') return { ok: false, error: files }
 
   const payload = await payloadClient()
@@ -96,19 +98,29 @@ export async function submitRequest(form: FormData): Promise<ActionResult> {
     const request = await payload.create({ collection: 'requests', data: data as Request, overrideAccess: true, context: { skipEmails: true } })
     requestId = request.id
 
+    // Un fichier refusé ou un stockage en panne ne doit jamais faire perdre la demande : elle est gardée, marquée « pièces manquantes ».
     const kinds = form.getAll('documentKinds').map(String)
     const uploaded: Document[] = []
+    let failedFiles = 0
     for (const [i, file] of files.entries()) {
-      const doc = await payload.create({
-        collection: 'documents',
-        data: {
-          request: request.id,
-          kind: type === 'tradein' ? 'tradein-photo' : (pick(kinds[i] ?? '', ['id', 'address', 'payslips', 'tax', 'rib', 'kbis', 'accounts', 'bank', 'other'] as const) ?? 'other'),
-        },
-        file: { data: Buffer.from(await file.arrayBuffer()), mimetype: file.type, name: file.name, size: file.size },
-        overrideAccess: true,
-      })
-      uploaded.push(doc)
+      try {
+        const doc = await payload.create({
+          collection: 'documents',
+          data: {
+            request: request.id,
+            kind: type === 'tradein' ? 'tradein-photo' : (pick(kinds[i] ?? '', ['id', 'address', 'payslips', 'tax', 'rib', 'kbis', 'accounts', 'bank', 'other'] as const) ?? 'other'),
+          },
+          file: { data: Buffer.from(await file.arrayBuffer()), mimetype: file.type, name: file.name, size: file.size },
+          overrideAccess: true,
+        })
+        uploaded.push(doc)
+      } catch (err) {
+        failedFiles++
+        payload.logger.error({ err, request: request.id }, 'Fichier non enregistré, demande conservée')
+      }
+    }
+    if (failedFiles && type === 'financing') {
+      await payload.update({ collection: 'requests', id: request.id, data: { missingDocuments: true }, overrideAccess: true, context: { skipEmails: true } })
     }
     if (type === 'tradein' && uploaded.length) {
       await payload.update({
@@ -123,7 +135,11 @@ export async function submitRequest(form: FormData): Promise<ActionResult> {
     if (form.get('marketing') === 'on') await upsertSubscriber(email, firstName, { newsletter: true })
 
     await notifyNewRequest(payload, request, uploaded.length)
-    return { ok: true, reference: request.reference ?? undefined }
+    const notes = [
+      emailEnabled() ? 'Un récapitulatif vous a été envoyé par e-mail.' : '',
+      failedFiles ? `${failedFiles} fichier(s) n’ont pas pu être enregistrés : un conseiller vous indiquera comment nous les transmettre.` : '',
+    ]
+    return { ok: true, reference: request.reference ?? undefined, message: notes.filter(Boolean).join(' ') || undefined }
   } catch (err) {
     if (requestId) {
       await payload.delete({ collection: 'documents', where: { request: { equals: requestId } }, overrideAccess: true }).catch(() => undefined)
@@ -166,7 +182,7 @@ export async function bookAppointment(form: FormData): Promise<ActionResult> {
     data: { name, email, phone, startsAt, kind, status: 'confirmed', vehicle: vehicleId || undefined },
     overrideAccess: true,
   })
-  return { ok: true, message: 'Rendez-vous confirmé. Vous allez recevoir un e-mail récapitulatif.' }
+  return { ok: true, message: emailEnabled() ? 'Rendez-vous confirmé. Vous allez recevoir un e-mail récapitulatif.' : 'Rendez-vous confirmé. À bientôt à l’agence !' }
 }
 
 async function upsertSubscriber(email: string, firstName: string | undefined, data: { newsletter?: boolean; alertEnabled?: boolean; criteria?: Record<string, unknown> }) {

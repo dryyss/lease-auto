@@ -27,6 +27,8 @@ const STATUS_TAG: Record<Request['status'], [string, string]> = {
 const FORMULA: Record<string, string> = { loa: 'LOA', lld: 'LLD', credit: 'Crédit' }
 const KIND_LABELS: Record<Appointment['kind'], string> = { 'test-drive': 'Essai', visit: 'Passage', delivery: 'Livraison' }
 
+/** E-mails branchés (Resend) : sinon les confirmations ne promettent pas d’e-mail au client. */
+const MAIL = Boolean(process.env.RESEND_API_KEY)
 const REQ = '/admin/collections/requests'
 const APPT = '/admin/collections/appointments'
 const CARS = '/admin/collections/vehicles'
@@ -502,10 +504,10 @@ function RequestRow({ r, late = false, showStatus = false, owner = null }: { r: 
         <a className="la-phone" href={tel(r.phone)}><Icon name="phone" />{r.phone}</a>
         <span className="la-row-btns">
         {r.status === 'new' && <DashAction id={r.id} kind="advance" label="Prendre en charge" />}
-        {r.status === 'review' && <DashAction id={r.id} kind="advance" label="Accorder" confirm={`Confirmer l’accord pour ${r.firstName} ${r.lastName} ? Le client reçoit un e-mail.`} />}
-        {r.status === 'approved' && <DashAction id={r.id} kind="advance" label="Marquer livrée" confirm={`Le véhicule de ${r.firstName} ${r.lastName} a été livré ? Le client reçoit un e-mail, puis une demande d’avis.`} />}
+        {r.status === 'review' && <DashAction id={r.id} kind="advance" label="Accorder" confirm={`Confirmer l’accord pour ${r.firstName} ${r.lastName} ?${MAIL ? ' Le client reçoit un e-mail.' : ' Pensez à prévenir le client.'}`} />}
+        {r.status === 'approved' && <DashAction id={r.id} kind="advance" label="Marquer livrée" confirm={`Le véhicule de ${r.firstName} ${r.lastName} a été livré ?${MAIL ? ' Le client reçoit un e-mail, puis une demande d’avis.' : ''}`} />}
         {(r.status === 'new' || r.status === 'review') && (
-          <DashAction id={r.id} kind="refuse" label="Refuser" tone="ghost" confirm={`Refuser la demande de ${r.firstName} ${r.lastName} ? Le client est prévenu par e-mail.`} />
+          <DashAction id={r.id} kind="refuse" label="Refuser" tone="ghost" confirm={`Refuser la demande de ${r.firstName} ${r.lastName} ?${MAIL ? ' Le client est prévenu par e-mail.' : ' Pensez à prévenir le client.'}`} />
         )}
         </span>
       </span>

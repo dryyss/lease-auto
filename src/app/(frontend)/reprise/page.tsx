@@ -4,6 +4,7 @@ import { CardsSection, QuestionsSection } from '@/components/content/Blocks'
 import { TradeInForm } from '@/components/forms/SimpleForms'
 import { ContactAside } from '@/components/ui/ContactAside'
 import { PageHero } from '@/components/ui/PageHero'
+import { uploadsEnabled } from '@/lib/services'
 import { TRADE_IN } from '@/lib/page-content'
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default function TradeInPage() {
       />
       <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[1fr_340px]">
         <div className="card p-6 sm:p-8">
-          <TradeInForm />
+          <TradeInForm uploads={uploadsEnabled()} />
         </div>
         <ContactAside />
       </div>
