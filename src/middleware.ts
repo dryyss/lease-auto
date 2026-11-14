@@ -32,11 +32,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
   if (pathname === '/admin/logout') {
+    // Compte de démo : on efface son cookie, Auth0 n'est pas concerné.
+    if (request.cookies.has(DEV_COOKIE)) {
+      const res = NextResponse.redirect(new URL('/', request.url))
+      res.cookies.set(DEV_COOKIE, '', { path: '/', maxAge: 0 })
+      return res
+    }
     return NextResponse.redirect(new URL('/auth/logout', request.url))
   }
   // Pas de session : direction Auth0 tout de suite, côté serveur. Sinon Payload charge l'admin puis redirige
   // côté navigateur, et cette navigation interne échoue sur Auth0 (autre domaine) avant de se rattraper.
-  if (pathname.startsWith('/admin') && !(await auth0.getSession(request))) {
+  // Le cookie de démo (signé) est vérifié par Payload : on le laisse passer.
+  if (pathname.startsWith('/admin') && !request.cookies.has(DEV_COOKIE) && !(await auth0.getSession(request))) {
     const url = new URL('/auth/login', request.url)
     url.searchParams.set('returnTo', pathname + request.nextUrl.search)
     return NextResponse.redirect(url)
