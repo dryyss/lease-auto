@@ -20,7 +20,7 @@ export const COMPARE_ROWS: { label: string; loa: string | boolean; lld: string |
 export const PURCHASE_STEPS: Item[] = [
   { title: 'Vous choisissez', text: 'Un véhicule de notre stock, contrôlé et garanti 12 mois. Vous pouvez l’essayer à l’agence avant de vous décider.' },
   { title: 'Nous montons le dossier', text: 'Vous envoyez vos justificatifs en ligne. Un conseiller vérifie le dossier et le présente à nos partenaires financiers.' },
-  { title: 'Vous recevez la réponse', text: 'Une fois le dossier complet, la réponse arrive en général sous 48 h. Nous vous expliquons l’offre ligne par ligne avant toute signature.' },
+  { title: 'Vous recevez la réponse', text: 'Une fois le dossier complet, un conseiller vous présente la réponse et vous explique l’offre ligne par ligne avant toute signature.' },
   { title: 'Vous prenez la route', text: 'Retrait à l’agence d’Épinay-sur-Seine ou livraison partout en France, avec la carte grise et la garantie 12 mois.' },
 ]
 
@@ -72,7 +72,7 @@ export const SIMULATOR = {
     'Un apport, même modeste, réduit la mensualité et le coût total. Le montant d’une reprise peut servir d’apport.',
     'Allonger la durée baisse la mensualité mais augmente le coût total : choisissez la durée la plus courte que votre budget permet.',
     'En LOA et en LLD, choisissez un kilométrage annuel réaliste. Un dépassement est facturé en fin de contrat.',
-    'La simulation est indicative. L’offre définitive dépend de votre dossier et de l’accord de l’organisme financier.',
+    'La simulation calcule des montants exacts hors assurance facultative. L’offre définitive dépend de votre dossier et de l’accord de l’organisme financier.',
   ],
   faq: [
     { q: 'La simulation m’engage-t-elle ?', a: 'Non. Elle est gratuite, anonyme et sans engagement. Pour obtenir une offre personnalisée, faites une demande de financement en ligne.' },

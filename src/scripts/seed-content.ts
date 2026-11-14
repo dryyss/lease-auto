@@ -228,7 +228,7 @@ const guides: { title: string; excerpt: string; content: Node[] }[] = [
       p('Une durée plus longue baisse la mensualité mais augmente le coût total. Choisissez la durée la plus courte compatible avec votre budget.'),
       h2('Les options'),
       p('L’assurance emprunteur, l’extension de garantie ou l’entretien inclus augmentent la mensualité. Elles peuvent être utiles : vérifiez simplement ce qu’elles couvrent et leur coût.'),
-      p('Un crédit vous engage et doit être remboursé. Vérifiez vos capacités de remboursement avant de vous engager.'),
+      p('Attention ! Un crédit coûte de l’argent et doit être remboursé.'),
     ],
   },
   {

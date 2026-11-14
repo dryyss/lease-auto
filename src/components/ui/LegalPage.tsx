@@ -37,6 +37,12 @@ async function Fallback({ kind }: { kind: Kind }) {
             ? `${c?.name} est immatriculée à l’ORIAS sous le n° ${c.orias} (vérifiable sur www.orias.fr) en qualité d’intermédiaire en opérations de banque et en services de paiement. ${c?.name} n’agit pas en tant que prêteur.`
             : 'Numéro ORIAS à compléter dans Réglages → Entreprise.'}
         </p>
+        <h2>Crédit à la consommation</h2>
+        <p>Attention ! Un crédit coûte de l’argent et doit être remboursé.</p>
+        <p>
+          Les exemples représentatifs, le TAEG et la liste des partenaires prêteurs figurent sous le simulateur et
+          peuvent être complétés dans Réglages → Financement (textes fournis par l’organisme partenaire).
+        </p>
         <h2>Hébergement</h2>
         <p>Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis.</p>
         <h2>Réalisation</h2>
@@ -85,7 +91,7 @@ async function Fallback({ kind }: { kind: Kind }) {
       <h2>Objet</h2>
       <p>Les présentes conditions encadrent l’utilisation du site de {c?.name ?? 'Lease Auto'} et le dépôt de demandes de financement, de reprise ou de rendez-vous.</p>
       <h2>Annonces et prix</h2>
-      <p>Les prix sont indiqués TTC. Les mensualités sont indicatives et soumises à l’acceptation du dossier par l’organisme financier. Un crédit vous engage et doit être remboursé.</p>
+      <p>Les prix sont indiqués TTC. Les mensualités sont calculées hors assurance facultative et soumises à l’acceptation du dossier par l’organisme financier. Attention ! Un crédit coûte de l’argent et doit être remboursé.</p>
       <h2>Demandes en ligne</h2>
       <p>Une demande déposée sur le site ne vaut ni commande ni accord de financement. Elle permet à un conseiller d’étudier votre projet et de vous recontacter.</p>
       <h2>Droit applicable</h2>

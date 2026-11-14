@@ -32,7 +32,7 @@ export async function Footer() {
             <p className="mb-2 text-xl font-black sm:text-2xl lg:text-3xl">
               Prêt à rouler dans votre <span className="text-accent-on-dark">prochaine voiture</span> ?
             </p>
-            <p className="text-sm text-white/55 sm:text-base">Réponse de principe sous 48 h, dossier 100 % en ligne.</p>
+            <p className="text-sm text-white/55 sm:text-base">Dossier en ligne, étude personnalisée, garantie 12 mois.</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link href="/demande" className="btn-primary">

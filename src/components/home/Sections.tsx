@@ -18,14 +18,18 @@ export function SectionHeader({ eyebrow, title, intro, center = true }: { eyebro
 }
 
 const DEFAULT_TITLE = 'Votre voiture d’occasion contrôlée, financée en LOA, LLD ou crédit'
+const DEFAULT_SUBTITLE = 'Réponse sous 48 h, garantie 12 mois, livraison partout en France.'
+const SAFE_SUBTITLE = 'Garantie 12 mois, livraison partout en France, dossier étudié avec vous.'
 
 export function HomeHero({ hero, cars }: { hero: Homepage['hero']; cars: HeroCar[] }) {
   const image = typeof hero?.image === 'object' ? (hero.image as Media) : null
   const imageSrc = mediaSrc(image, 'large') || '/images/hero.jpg'
   const rawTitle = hero?.title?.trim()
   const title = !rawTitle || rawTitle === DEFAULT_TITLE ? 'Une offre claire. Sans surprise.' : rawTitle
+  const rawSubtitle = hero?.subtitle?.trim()
+  const subtitle = !rawSubtitle || rawSubtitle === DEFAULT_SUBTITLE ? SAFE_SUBTITLE : rawSubtitle
 
-  return <HeroStage fallback={imageSrc} title={title} subtitle={hero?.subtitle ?? undefined} cars={cars} />
+  return <HeroStage fallback={imageSrc} title={title} subtitle={subtitle} cars={cars} />
 }
 
 const FORMULAS = [
@@ -34,7 +38,7 @@ const FORMULAS = [
     icon: KeyRound,
     name: 'LOA',
     title: 'Location avec option d’achat',
-    text: 'Roulez maintenant, décidez plus tard : en fin de contrat, vous achetez le véhicule ou vous le rendez.',
+    text: 'En fin de contrat, vous achetez le véhicule au prix fixé dès la signature, ou vous le rendez.',
     points: ['De 12 à 84 mois', 'Option d’achat fixée dès la signature', 'Particuliers et professionnels'],
   },
   {
@@ -61,7 +65,7 @@ export function FormulasSection() {
       <div className="container-site">
         <SectionHeader
           eyebrow="Nos financements"
-          title={<>Trois formules, <span className="gradient-text">une réponse en 48 h</span></>}
+          title={<>Trois formules, <span className="gradient-text">un dossier étudié</span></>}
           intro="Chaque dossier est étudié au cas par cas : salariés, indépendants, VTC et sociétés."
         />
         <div className="grid gap-6 md:grid-cols-3">
@@ -96,7 +100,7 @@ const DEFAULT_STEPS = [
   { title: 'Choisissez', text: 'Parcourez le stock ou dites-nous ce que vous cherchez.' },
   { title: 'Simulez', text: 'Formule, apport et durée : votre mensualité en direct.' },
   { title: 'Envoyez votre dossier', text: 'Pièces déposées en ligne, en toute sécurité.' },
-  { title: 'Recevez la réponse', text: 'Accord de principe sous 48 h ouvrées.' },
+  { title: 'Recevez la réponse', text: 'Un conseiller étudie votre dossier et vous explique l’offre avant toute signature.' },
   { title: 'Roulez', text: 'Retrait à l’agence ou livraison chez vous.' },
 ]
 
@@ -122,7 +126,7 @@ export function StepsSection({ steps }: { steps?: Homepage['steps'] }) {
 
 const DEFAULT_STATS = [
   { value: '12 mois', label: 'de garantie incluse' },
-  { value: '48 h', label: 'pour un accord de principe' },
+  { value: 'Étude', label: 'personnalisée de chaque dossier' },
   { value: '100 %', label: 'des véhicules contrôlés' },
   { value: 'France', label: 'livraison partout' },
 ]

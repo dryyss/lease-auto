@@ -15,7 +15,7 @@ export const Homepage: GlobalConfig = {
       type: 'group',
       fields: [
         { name: 'title', label: 'Titre', type: 'text', required: true, defaultValue: 'Votre voiture d’occasion contrôlée, financée en LOA, LLD ou crédit' },
-        { name: 'subtitle', label: 'Sous-titre', type: 'textarea', defaultValue: 'Réponse sous 48 h, garantie 12 mois, livraison partout en France.' },
+        { name: 'subtitle', label: 'Sous-titre', type: 'textarea', defaultValue: 'Garantie 12 mois, livraison partout en France, dossier étudié avec vous.' },
         { name: 'image', label: 'Image', type: 'upload', relationTo: 'media' },
         {
           name: 'badges',

@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     ...seoMeta(model, {
       title: `${name} d’occasion en LOA, LLD ou crédit`,
-      description: `${name} d’occasion contrôlée et garantie 12 mois, financement LOA, LLD ou crédit avec réponse sous 48 h. Livraison partout en France.`,
+      description: `${name} d’occasion contrôlée et garantie 12 mois, financement LOA, LLD ou crédit. Livraison partout en France.`,
     }),
     alternates: { canonical: `/vehicules/${brand.slug}/${model.slug}` },
   }

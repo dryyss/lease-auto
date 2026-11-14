@@ -18,7 +18,7 @@ export default async function ContactPage({ searchParams }: Props) {
   const { rappel } = await searchParams
   return (
     <>
-      <PageHero compact eyebrow="Contact" title="Parlons de votre projet" intro="Écrivez-nous ou demandez à être rappelé : un conseiller vous répond rapidement." crumbs={[{ label: 'Contact' }]} />
+      <PageHero compact eyebrow="Contact" title="Parlons de votre projet" intro="Écrivez-nous ou demandez à être rappelé : un conseiller vous répond." crumbs={[{ label: 'Contact' }]} />
       <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[1fr_340px]">
         <div className="card p-6 sm:p-8">
           <ContactForm callback={rappel === '1'} />

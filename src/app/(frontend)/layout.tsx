@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
   title: { default: 'Lease Auto | Voitures d’occasion en LOA, LLD et crédit', template: '%s | Lease Auto' },
   description:
-    'Véhicules d’occasion contrôlés et financement LOA, LLD ou crédit. Réponse rapide, garantie 12 mois, livraison partout en France.',
+    'Véhicules d’occasion contrôlés et financement LOA, LLD ou crédit. Garantie 12 mois, livraison partout en France.',
   openGraph: { locale: 'fr_FR', siteName: 'Lease Auto', type: 'website' },
   // SEO-07 : validation Search Console (balise meta), si renseignée
   verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION },

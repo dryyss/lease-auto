@@ -4,8 +4,9 @@ import { ArrowRight, Calculator } from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
+import { CREDIT_WARNING } from '@/lib/credit-legal'
 import { computeMonthly, type Formula } from '@/lib/finance'
-import { FORMULA_LABELS, formatEUR, formatPercent } from '@/lib/format'
+import { FORMULA_LABELS, formatEUR, formatEURCents, formatPercent } from '@/lib/format'
 
 export type FormulaRates = {
   formula: Formula
@@ -17,7 +18,7 @@ export type FormulaRates = {
   residualPercent: number
 }
 
-/** PUB-10 (version accueil) : mensualité selon la formule, l'apport et la durée, avec TAEG et coût total. */
+/** PUB-10 / Lenbox nov. 2026 : mensualité exacte + montant, durée, taux, TAEG, coût et total dû. */
 export function QuickSimulator({ rates }: { rates: FormulaRates[] }) {
   const [formula, setFormula] = useState<Formula>(rates[0]?.formula ?? 'loa')
   const [price, setPrice] = useState(20_000)
@@ -26,6 +27,7 @@ export function QuickSimulator({ rates }: { rates: FormulaRates[] }) {
   const [months, setMonths] = useState(conf?.defaultMonths ?? 48)
 
   const clampedMonths = conf ? Math.min(Math.max(months, conf.minMonths), conf.maxMonths) : months
+  const financed = Math.max(price - Math.min(deposit, price), 0)
   const result = useMemo(
     () =>
       conf &&
@@ -40,6 +42,9 @@ export function QuickSimulator({ rates }: { rates: FormulaRates[] }) {
   )
 
   if (!conf || !result) return null
+
+  const isCreditLike = formula === 'credit' || formula === 'loa'
+  const totalDue = formula === 'credit' ? result.totalCost - Math.min(deposit, price) : result.totalCost
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
@@ -81,44 +86,71 @@ export function QuickSimulator({ rates }: { rates: FormulaRates[] }) {
       </div>
 
       <div className="flex flex-col gap-4 lg:col-span-2">
-        <div className="gradient-cta flex-1 rounded-3xl p-6 shadow-2xl sm:p-7" aria-live="polite">
+        <div className="gradient-cta relative flex-1 overflow-hidden rounded-3xl p-6 shadow-2xl sm:p-7" aria-live="polite">
           <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-accent/35 blur-3xl" aria-hidden />
           <div className="relative">
             <p className="mb-2 flex items-center gap-2 text-xs font-bold tracking-widest text-white/70 uppercase">
               <Calculator className="size-4 text-accent-on-dark" aria-hidden />
-              {formula === 'credit' ? 'Mensualité estimée' : 'Loyer estimé'}
+              {formula === 'credit' ? 'Mensualité' : 'Loyer'}
             </p>
             <p className="text-4xl font-black tracking-tight tabular-nums sm:text-5xl">
-              {formatEUR(result.monthly)}
+              {formatEURCents(result.monthly)}
               <span className="text-lg font-bold text-white/70">/mois*</span>
             </p>
-            <p className="mt-1 text-xs text-white/60">pendant {clampedMonths} mois</p>
+            <p className="mt-2 text-xs font-semibold text-white/85">{CREDIT_WARNING}</p>
             <div className="my-5 h-px bg-white/10" />
-            <dl className="grid grid-cols-2 gap-4 text-sm">
-              {formula === 'lld' ? (
-                <div>
-                  <dt className="text-[10px] tracking-wider text-white/55 uppercase">En fin de contrat</dt>
-                  <dd className="text-lg font-bold">Restitution</dd>
-                </div>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              {isCreditLike ? (
+                <>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">Montant du crédit</dt>
+                    <dd className="font-bold tabular-nums">{formatEUR(financed)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">Durée</dt>
+                    <dd className="font-bold tabular-nums">{clampedMonths} mois</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">Taux débiteur fixe</dt>
+                    <dd className="font-bold tabular-nums">{formatPercent(conf.annualRate)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">TAEG fixe</dt>
+                    <dd className="font-bold tabular-nums">{conf.taeg != null ? formatPercent(conf.taeg) : 'Sur devis'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">Coût du crédit</dt>
+                    <dd className="font-bold tabular-nums">{formatEURCents(result.creditCost)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">Montant total dû</dt>
+                    <dd className="font-bold tabular-nums">{formatEURCents(totalDue)}</dd>
+                  </div>
+                  {formula === 'loa' && (
+                    <div className="col-span-2">
+                      <dt className="text-[10px] tracking-wider text-white/55 uppercase">Option d’achat finale</dt>
+                      <dd className="font-bold tabular-nums">{formatEURCents(result.residualValue)}</dd>
+                    </div>
+                  )}
+                </>
               ) : (
-                <div>
-                  <dt className="text-[10px] tracking-wider text-white/55 uppercase">TAEG fixe</dt>
-                  <dd className="text-lg font-bold">{conf.taeg != null ? formatPercent(conf.taeg) : 'Sur devis'}</dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-[10px] tracking-wider text-white/55 uppercase">
-                  {formula === 'lld' ? 'Total des loyers' : 'Coût total'}
-                </dt>
-                <dd className="text-lg font-bold">{formatEUR(result.totalCost)}</dd>
-              </div>
-              {formula === 'loa' && (
-                <div className="col-span-2">
-                  <dt className="text-[10px] tracking-wider text-white/55 uppercase">Option d’achat finale</dt>
-                  <dd className="text-lg font-bold">{formatEUR(result.residualValue)}</dd>
-                </div>
+                <>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">Durée</dt>
+                    <dd className="font-bold tabular-nums">{clampedMonths} mois</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">En fin de contrat</dt>
+                    <dd className="font-bold">Restitution</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="text-[10px] tracking-wider text-white/55 uppercase">Total des loyers</dt>
+                    <dd className="font-bold tabular-nums">{formatEURCents(result.totalCost)}</dd>
+                  </div>
+                </>
               )}
             </dl>
+            <p className="mt-4 text-[11px] leading-snug text-white/60">* Hors assurance facultative.</p>
           </div>
         </div>
         <Link

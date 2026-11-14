@@ -28,7 +28,7 @@ export default async function SimulatorPage() {
       <PageHero
         eyebrow="Simulateur"
         title="Calculez votre mensualité"
-        intro="Choisissez la formule, le prix, l’apport et la durée : la mensualité, le TAEG et le coût total s’affichent instantanément. Sans engagement."
+        intro="Choisissez la formule, le prix, l’apport et la durée : la mensualité, le TAEG et le coût total s’affichent. Simulation sans engagement."
         crumbs={[{ label: 'Simulateur' }]}
       />
       <div className="container-site max-w-6xl pb-16">

@@ -20,7 +20,7 @@ export const FORMULAS: Record<Formula, Content> = {
     name: 'LOA',
     title: 'La LOA : roulez maintenant, décidez plus tard',
     metaTitle: 'LOA voiture d’occasion : location avec option d’achat',
-    metaDescription: 'Financez votre voiture d’occasion en LOA chez Lease Auto : loyers fixes de 12 à 84 mois, option d’achat en fin de contrat. Réponse sous 48 h.',
+    metaDescription: 'Financez votre voiture d’occasion en LOA chez Lease Auto : loyers fixes de 12 à 84 mois, option d’achat en fin de contrat. Garantie 12 mois.',
     intro:
       'La location avec option d’achat vous permet de rouler dans un véhicule d’occasion contrôlé contre un loyer mensuel fixe. En fin de contrat, vous choisissez : l’acheter au prix fixé dès le départ, ou le rendre.',
     how: [
@@ -37,7 +37,7 @@ export const FORMULAS: Record<Formula, Content> = {
     name: 'LLD',
     title: 'La LLD : un loyer fixe, sans souci de revente',
     metaTitle: 'LLD voiture d’occasion : location longue durée',
-    metaDescription: 'Location longue durée de véhicules d’occasion chez Lease Auto : loyer fixe, entretien possible, idéal pour les pros et les VTC. Réponse sous 48 h.',
+    metaDescription: 'Location longue durée de véhicules d’occasion chez Lease Auto : loyer fixe, entretien possible, idéal pour les pros et les VTC. Garantie 12 mois.',
     intro:
       'Avec la location longue durée, vous payez un loyer fixe pour l’usage d’un véhicule pendant une durée définie, puis vous le rendez. Pas d’achat, pas de revente : vous changez de voiture quand le contrat se termine.',
     how: [
@@ -54,7 +54,7 @@ export const FORMULAS: Record<Formula, Content> = {
     name: 'Crédit auto',
     title: 'Le crédit auto : propriétaire dès le premier jour',
     metaTitle: 'Crédit auto voiture d’occasion : crédit affecté',
-    metaDescription: 'Achetez votre voiture d’occasion à crédit chez Lease Auto : mensualités fixes de 12 à 72 mois, vous êtes propriétaire dès la livraison. Réponse sous 48 h.',
+    metaDescription: 'Achetez votre voiture d’occasion à crédit chez Lease Auto : mensualités fixes de 12 à 72 mois, vous êtes propriétaire dès la livraison. Garantie 12 mois.',
     intro:
       'Avec le crédit affecté, vous achetez le véhicule et le remboursez par mensualités fixes. La carte grise est à votre nom dès la livraison : aucune limite de kilométrage, aucune restitution.',
     how: [

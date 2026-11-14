@@ -12,7 +12,7 @@ const financing = [
   { name: 'LOA', desc: 'Location avec option d’achat', href: '/financement/loa', icon: KeyRound },
   { name: 'LLD', desc: 'Location longue durée, sans engagement d’achat', href: '/financement/lld', icon: FileSignature },
   { name: 'Crédit auto', desc: 'Vous êtes propriétaire dès le départ', href: '/financement/credit', icon: Wallet },
-  { name: 'Simulateur', desc: 'Calculez votre mensualité en direct', href: '/simulateur', icon: Calculator },
+  { name: 'Simulateur', desc: 'Calculez votre mensualité, TAEG et coût total', href: '/simulateur', icon: Calculator },
 ]
 
 const links = [

@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import type { Appointment, Media, Request, Subscriber, Vehicle } from '@/payload-types'
 
+import { CREDIT_WARNING } from './credit-legal'
 import { internalRecipients, renderEmail, sendEmail, siteUrl, type EmailBlock } from './email'
 import { FORMULA_LABELS, formatEUR, formatKm } from './format'
 
@@ -13,7 +14,7 @@ const REQUEST_TYPES: Record<Request['type'], string> = {
 }
 
 const STATUS_TEXT: Record<Request['status'], { title: string; text: string }> = {
-  new: { title: 'Votre demande est bien reçue', text: 'Un conseiller l’étudie et revient vers vous rapidement.' },
+  new: { title: 'Votre demande est bien reçue', text: 'Un conseiller l’étudie et revient vers vous.' },
   review: { title: 'Votre dossier est à l’étude', text: 'Votre dossier est en cours d’étude par nos partenaires financiers. Nous vous tenons informé dès qu’une réponse arrive.' },
   approved: { title: 'Bonne nouvelle : accord obtenu', text: 'Votre financement a reçu un accord. Votre conseiller vous contacte pour organiser la signature et la livraison.' },
   refused: { title: 'Réponse à votre demande', text: 'Nous n’avons malheureusement pas pu obtenir d’accord pour ce dossier. Votre conseiller peut étudier avec vous une autre solution (autre véhicule, apport, durée).' },
@@ -277,7 +278,7 @@ export async function sendCampaign(payload: Payload, campaign: { subject: string
             ...(campaign.intro ? [{ type: 'p' as const, text: campaign.intro }] : []),
             ...vehicles.map((v) => ({ type: 'html' as const, html: vehicleCardHtml(v) })),
             { type: 'button', label: 'Voir tout le stock', href: `${siteUrl()}/vehicules` },
-            { type: 'p', text: `* ${settings.financing?.legalNotice ?? 'Un crédit vous engage et doit être remboursé.'}` },
+            { type: 'p', text: `* ${CREDIT_WARNING}` },
           ],
           footerNote: unsubscribeNote(s),
         }),

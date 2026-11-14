@@ -123,7 +123,7 @@ export const Settings: GlobalConfig = {
                   name: 'legalNotice',
                   label: 'Mention obligatoire',
                   type: 'text',
-                  defaultValue: 'Un crédit vous engage et doit être remboursé. Vérifiez vos capacités de remboursement avant de vous engager.',
+                  defaultValue: 'Attention ! Un crédit coûte de l’argent et doit être remboursé.',
                 },
               ],
             },

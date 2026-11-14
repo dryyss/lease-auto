@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     ...seoMeta(p, {
       title: `Voiture d’occasion en LOA ou crédit à ${p.city}`,
-      description: `Lease Auto livre à ${p.city} des voitures d’occasion contrôlées, garanties 12 mois, financées en LOA, LLD ou crédit. Réponse sous 48 h.`,
+      description: `Lease Auto livre à ${p.city} des voitures d’occasion contrôlées, garanties 12 mois, financées en LOA, LLD ou crédit.`,
     }),
     alternates: { canonical: `/voiture-occasion/${p.slug}` },
   }
