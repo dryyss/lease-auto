@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 /** SEO : fil d'Ariane lisible par Google (BreadcrumbList), même contenu que le fil affiché. */
@@ -34,6 +35,8 @@ export function PageHero({
 }) {
   return (
     <section className={`relative mb-8 overflow-hidden sm:mb-10 ${compact ? 'pt-28 pb-8 sm:pt-32 sm:pb-10' : 'pt-28 pb-10 sm:pt-36 sm:pb-12'}`}>
+      {/* Photo propre au bandeau : le fond du site est voilé de blanc, il ne suffit plus ici. */}
+      <Image src="/images/hero.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[center_40%]" />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/55 to-black/30" />
       <div className="container-site relative text-white">
         {crumbs && (

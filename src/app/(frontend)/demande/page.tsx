@@ -10,7 +10,8 @@ import { payloadClient, visibleVehiclesWhere } from '@/lib/payload'
 
 export const metadata: Metadata = {
   title: 'Demande de financement LOA, LLD ou crédit',
-  description: 'Faites votre demande de financement en 4 étapes et envoyez vos justificatifs en ligne. Réponse de principe sous 48 h ouvrées.',
+  description:
+    'Faites votre demande de financement en 4 étapes et envoyez vos justificatifs en ligne. Étude personnalisée de votre dossier.',
   alternates: { canonical: '/demande' },
 }
 
@@ -31,27 +32,44 @@ export default async function RequestPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero compact
+      <PageHero
+        compact
         eyebrow="Demande de financement"
         title="Votre financement en 4 étapes"
-        intro="Quelques minutes suffisent. Un conseiller étudie votre dossier et vous répond sous 48 h ouvrées."
+        intro="Remplissez le formulaire et joignez vos justificatifs. Un conseiller étudie votre dossier et vous recontacte."
         crumbs={[{ label: 'Demande de financement' }]}
       />
       <div className="container-site grid items-start gap-8 pb-16 lg:grid-cols-[1fr_340px]">
-        <div className="card p-6 sm:p-8">
-          <FinancingForm
-            vehicles={vehicles.docs.map((v) => ({ id: v.id, title: v.title, price: v.price }))}
-            defaults={{ vehicle: sp.vehicule, formula: sp.formule, months: sp.duree, deposit: sp.apport }}
-            uploads={uploadsEnabled()}
-          />
+        <div className="space-y-6">
+          <div className="card p-6 sm:p-8">
+            <FinancingForm
+              vehicles={vehicles.docs.map((v) => ({ id: v.id, title: v.title, price: v.price }))}
+              defaults={{
+                vehicle: sp.vehicule,
+                formula: sp.formule,
+                months: sp.duree,
+                deposit: sp.apport,
+              }}
+              uploads={uploadsEnabled()}
+            />
+          </div>
+          <RequiredDocs />
         </div>
         <ContactAside>
           <div className="card space-y-4 p-6 text-sm">
             {[
-              [Timer, 'Réponse sous 48 h', 'Accord de principe après réception du dossier complet.'],
+              [Timer, 'Étude du dossier', 'Un conseiller étudie votre demande et vous recontacte.'],
               uploadsEnabled()
-                ? [FileCheck2, 'Dossier en ligne', 'Justificatifs déposés de façon sécurisée, supprimés après étude.']
-                : [FileCheck2, 'Dossier simple', 'Un conseiller vous indique comment transmettre vos pièces.'],
+                ? [
+                    FileCheck2,
+                    'Dossier en ligne',
+                    'Justificatifs déposés de façon sécurisée, supprimés après étude.',
+                  ]
+                : [
+                    FileCheck2,
+                    'Dossier simple',
+                    'Un conseiller vous indique comment transmettre vos pièces.',
+                  ],
               [ShieldCheck, 'Sans engagement', 'La demande ne vous engage à rien.'],
             ].map(([Icon, title, text]) => {
               const I = Icon as typeof Timer
@@ -66,7 +84,6 @@ export default async function RequestPage({ searchParams }: Props) {
               )
             })}
           </div>
-          <RequiredDocs />
         </ContactAside>
       </div>
     </>

@@ -70,9 +70,10 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(at 8% 0%, rgba(13, 36, 73, 0.22), transparent 42%),
-      radial-gradient(at 100% 8%, rgba(222, 29, 34, 0.16), transparent 36%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(244, 246, 250, 0.86) 48%, rgba(244, 246, 250, 0.92) 100%);
+      radial-gradient(at 8% 0%, rgba(13, 36, 73, 0.12), transparent 42%),
+      radial-gradient(at 100% 8%, rgba(222, 29, 34, 0.06), transparent 36%),
+      /* Voile épais : la photo reste une texture, elle ne doit pas se lire derrière les titres et les cartes. */
+      linear-gradient(180deg, rgba(248, 249, 252, 0.9) 0%, rgba(244, 246, 250, 0.95) 45%, rgba(244, 246, 250, 0.97) 100%);
   }
   ::selection {
     background: rgba(222, 29, 34, 0.15);
