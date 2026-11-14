@@ -34,6 +34,13 @@ export async function middleware(request: NextRequest) {
   if (pathname === '/admin/logout') {
     return NextResponse.redirect(new URL('/auth/logout', request.url))
   }
+  // Pas de session : direction Auth0 tout de suite, côté serveur. Sinon Payload charge l'admin puis redirige
+  // côté navigateur, et cette navigation interne échoue sur Auth0 (autre domaine) avant de se rattraper.
+  if (pathname.startsWith('/admin') && !(await auth0.getSession(request))) {
+    const url = new URL('/auth/login', request.url)
+    url.searchParams.set('returnTo', pathname + request.nextUrl.search)
+    return NextResponse.redirect(url)
+  }
 
   // Monte /auth/* et prolonge la session Auth0 pendant la navigation dans l'admin.
   return auth0.middleware(request)
