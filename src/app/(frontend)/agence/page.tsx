@@ -25,7 +25,7 @@ export default async function AgencyPage() {
     payload.findGlobal({ slug: 'agency', depth: 1 }),
     getSettings(),
     getHomepage(),
-    payload.find({ collection: 'reviews', where: { featured: { equals: true } }, limit: 3, sort: '-date', depth: 0 }),
+    payload.find({ collection: 'reviews', where: { featured: { equals: true } }, limit: 60, sort: '-date', depth: 0 }),
   ])
   const c = settings.company
   const photos = (agency.photos ?? []).map((p) => ({ src: mediaSrc(p, 'card'), alt: typeof p === 'object' ? p.alt : '' })).filter((p) => p.src)
@@ -88,7 +88,7 @@ export default async function AgencyPage() {
       </section>
 
       <StatsBand stats={home.stats} />
-      <ReviewsSection reviews={reviews.docs} googleUrl={c?.googleReviewUrl} />
+      <ReviewsSection reviews={reviews.docs} links={{ google: c?.googleReviewUrl, instagram: settings.social?.instagram, tiktok: settings.social?.tiktok }} />
     </>
   )
 }

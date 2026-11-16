@@ -2,6 +2,7 @@ import { RichText } from '@payloadcms/richtext-lexical/react'
 import { ArrowRight, BadgeCheck, ChevronDown, FileSignature, KeyRound, ShieldCheck, Star, Truck, Wallet } from 'lucide-react'
 import Link from 'next/link'
 
+import { NETWORKS, type Network } from '@/components/ui/SocialLogos'
 import { mediaSrc } from '@/lib/media'
 import type { Faq, Homepage, Media, Review } from '@/payload-types'
 
@@ -152,40 +153,108 @@ export function StatsBand({ stats }: { stats?: Homepage['stats'] }) {
   )
 }
 
-export function ReviewsSection({ reviews, googleUrl }: { reviews: Review[]; googleUrl?: string | null }) {
-  if (!reviews.length) return null
-  const average = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-  return (
-    <section className="section section-soft">
-      <div className="container-site">
-        <SectionHeader
-          eyebrow="Avis clients"
-          title="Ils ont roulé avec Lease Auto"
-          intro={`Note moyenne ${average.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}/5 sur les avis Google mis en avant.`}
-        />
-        <div className="grid gap-5 md:grid-cols-3">
-          {reviews.map((r) => (
-            <figure key={r.id} className="card flex flex-col p-6">
-              <div className="mb-3 flex gap-0.5" aria-label={`${r.rating} sur 5`}>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Star key={i} className={`size-4 ${i < r.rating ? 'fill-amber-400 text-amber-400' : 'text-line'}`} aria-hidden />
-                ))}
-              </div>
-              <blockquote className="mb-5 flex-1 text-sm leading-relaxed text-ink-2">« {r.text} »</blockquote>
-              <figcaption className="text-sm">
-                <span className="font-bold text-primary">{r.firstName}</span>
-                <span className="text-ink-3"> · {new Date(r.date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })} · Google</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        {googleUrl && (
-          <p className="mt-8 text-center">
-            <a href={googleUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-              Voir tous les avis sur Google
-            </a>
-          </p>
+const NETWORK_ORDER: Network[] = ['google', 'instagram', 'tiktok']
+
+/** Assez de cartes pour couvrir un grand écran, puis le tout en double : le défilement boucle sans saut. */
+const fillRow = (items: Review[]) => {
+  const half = Array.from({ length: Math.ceil(8 / items.length) }, () => items).flat()
+  return [...half, ...half]
+}
+
+function ReviewCard({ review, network, hidden }: { review: Review; network: Network; hidden: boolean }) {
+  const { Logo, name } = NETWORKS[network]
+  const body = (
+    <>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        {network === 'google' && review.rating ? (
+          <span className="flex gap-0.5" role="img" aria-label={`${review.rating} sur 5`}>
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star key={i} className={`size-4 ${i < review.rating! ? 'fill-amber-400 text-amber-400' : 'text-line'}`} aria-hidden />
+            ))}
+          </span>
+        ) : (
+          <span className="text-3xl leading-none font-black text-accent/30" aria-hidden>
+            “
+          </span>
         )}
+        <Logo className="size-5 shrink-0" />
+      </div>
+      <blockquote className="mb-4 line-clamp-5 flex-1 text-sm leading-relaxed text-ink-2">{review.text}</blockquote>
+      <figcaption className="text-sm">
+        <span className="font-bold text-primary">{review.firstName}</span>
+        <span className="text-ink-3">
+          {' '}
+          · {new Date(review.date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })} · {name}
+        </span>
+      </figcaption>
+    </>
+  )
+  const cls = 'card flex w-[18rem] shrink-0 flex-col p-5 sm:w-[21rem]'
+  return (
+    <figure aria-hidden={hidden || undefined} className="shrink-0">
+      {review.url ? (
+        <a href={review.url} target="_blank" rel="noopener noreferrer" tabIndex={hidden ? -1 : undefined} className={`${cls} h-full transition hover:border-accent`}>
+          {body}
+        </a>
+      ) : (
+        <div className={`${cls} h-full`}>{body}</div>
+      )}
+    </figure>
+  )
+}
+
+/** PUB-16 : avis Google et commentaires Instagram / TikTok réels, un bandeau défilant par réseau. */
+export function ReviewsSection({
+  reviews,
+  links,
+}: {
+  reviews: Review[]
+  links: Partial<Record<Network, string | null | undefined>>
+}) {
+  const rows = NETWORK_ORDER.map((network) => ({ network, items: reviews.filter((r) => (r.source ?? 'google') === network) })).filter((r) => r.items.length)
+  if (!rows.length) return null
+
+  return (
+    <section className="section section-soft overflow-hidden">
+      <div className="container-site">
+        <SectionHeader eyebrow="Avis clients" title={<>Ils parlent de <span className="gradient-text">Lease Auto</span></>} intro="Avis Google et commentaires de nos clients sur Instagram et TikTok." />
+      </div>
+      <div className="space-y-10">
+        {rows.map(({ network, items }, i) => {
+          const { Logo, name } = NETWORKS[network]
+          const rated = items.filter((r) => r.rating)
+          const average = rated.length ? rated.reduce((s, r) => s + (r.rating ?? 0), 0) / rated.length : 0
+          const link = links[network]
+          const row = fillRow(items)
+          return (
+            <div key={network}>
+              <div className="container-site mb-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="flex items-center gap-3 text-lg font-black text-primary">
+                  <Logo className="size-8" />
+                  {name}
+                  {network === 'google' && average > 0 && (
+                    <span className="flex items-center gap-1 text-sm font-bold text-ink-2">
+                      <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden />
+                      {average.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}/5
+                    </span>
+                  )}
+                </p>
+                {link && (
+                  <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline">
+                    {network === 'google' ? 'Donner mon avis sur Google' : `Suivre Lease Auto sur ${name}`} <ArrowRight className="size-4" aria-hidden />
+                  </a>
+                )}
+              </div>
+              <div className="marquee" style={{ '--marquee-duration': `${Math.max(40, (row.length / 2) * 7)}s` } as React.CSSProperties}>
+                <div className={`marquee-track py-2 ${i % 2 ? 'marquee-reverse' : ''}`}>
+                  {row.map((r, k) => (
+                    <ReviewCard key={`${r.id}-${k}`} review={r} network={network} hidden={k >= items.length} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </section>
   )

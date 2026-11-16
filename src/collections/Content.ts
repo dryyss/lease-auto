@@ -3,24 +3,50 @@ import type { CollectionConfig } from 'payload'
 import { anyone, publishedOrStaff, staff } from '@/access'
 import { slugField } from '@/fields/slug'
 
-// PUB-16 : avis Google réels (prénom, note, date), mis en avant depuis l'administration.
+// PUB-16 : avis et commentaires RÉELS (Google, Instagram, TikTok), mis en avant depuis l'administration.
+// Jamais d'avis inventés : la loi l'interdit (pratique commerciale trompeuse).
 export const Reviews: CollectionConfig = {
   slug: 'reviews',
   labels: { singular: 'Avis client', plural: 'Avis clients' },
-  admin: { useAsTitle: 'firstName', defaultColumns: ['firstName', 'rating', 'date', 'featured'], group: 'Contenus' },
+  admin: { useAsTitle: 'firstName', defaultColumns: ['firstName', 'source', 'rating', 'date', 'featured'], group: 'Contenus' },
   access: { read: anyone, create: staff, update: staff, delete: staff },
   defaultSort: '-date',
   fields: [
     {
       type: 'row',
       fields: [
-        { name: 'firstName', label: 'Prénom', type: 'text', required: true },
-        { name: 'rating', label: 'Note', type: 'number', required: true, min: 1, max: 5 },
+        { name: 'firstName', label: 'Prénom ou pseudo', type: 'text', required: true },
+        {
+          name: 'rating',
+          label: 'Note (Google)',
+          type: 'number',
+          min: 1,
+          max: 5,
+          admin: { condition: (data) => (data?.source ?? 'google') === 'google' },
+          validate: (value: number | null | undefined, { siblingData }: { siblingData: { source?: string } }) =>
+            (siblingData?.source ?? 'google') !== 'google' || (typeof value === 'number' && value >= 1 && value <= 5) || 'Note de 1 à 5 obligatoire pour un avis Google.',
+        },
         { name: 'date', label: 'Date', type: 'date', required: true },
       ],
     },
-    { name: 'text', label: 'Avis', type: 'textarea', required: true },
-    { name: 'source', label: 'Source', type: 'select', defaultValue: 'google', options: [{ label: 'Google', value: 'google' }] },
+    { name: 'text', label: 'Avis ou commentaire', type: 'textarea', required: true },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'source',
+          label: 'Réseau',
+          type: 'select',
+          defaultValue: 'google',
+          options: [
+            { label: 'Google', value: 'google' },
+            { label: 'Instagram', value: 'instagram' },
+            { label: 'TikTok', value: 'tiktok' },
+          ],
+        },
+        { name: 'url', label: 'Lien vers l’avis ou la publication (facultatif)', type: 'text' },
+      ],
+    },
     { name: 'sourceId', type: 'text', unique: true, admin: { hidden: true } },
     { name: 'featured', label: 'Mis en avant', type: 'checkbox', defaultValue: true, admin: { position: 'sidebar' } },
   ],

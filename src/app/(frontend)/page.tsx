@@ -36,7 +36,7 @@ export default async function HomePage() {
       sort: '-updatedAt',
       depth: 1,
     }),
-    payload.find({ collection: 'reviews', where: { featured: { equals: true } }, limit: 6, sort: '-date', depth: 0 }),
+    payload.find({ collection: 'reviews', where: { featured: { equals: true } }, limit: 60, sort: '-date', depth: 0 }),
     payload.find({ collection: 'faqs', limit: 6, sort: 'order', depth: 0 }),
   ])
 
@@ -125,7 +125,7 @@ export default async function HomePage() {
 
       <StatsBand stats={home.stats} />
       <StepsSection steps={home.steps} />
-      <ReviewsSection reviews={reviews.docs} googleUrl={c?.googleReviewUrl} />
+      <ReviewsSection reviews={reviews.docs} links={{ google: c?.googleReviewUrl, instagram: settings.social?.instagram, tiktok: settings.social?.tiktok }} />
       <FaqSection faqs={faqs} />
 
       <div className="container-site pb-12">

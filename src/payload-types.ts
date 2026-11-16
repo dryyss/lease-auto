@@ -546,10 +546,11 @@ export interface Campaign {
 export interface Review {
   id: number;
   firstName: string;
-  rating: number;
+  rating?: number | null;
   date: string;
   text: string;
-  source?: 'google' | null;
+  source?: ('google' | 'instagram' | 'tiktok') | null;
+  url?: string | null;
   sourceId?: string | null;
   featured?: boolean | null;
   updatedAt: string;
@@ -1227,6 +1228,7 @@ export interface ReviewsSelect<T extends boolean = true> {
   date?: T;
   text?: T;
   source?: T;
+  url?: T;
   sourceId?: T;
   featured?: T;
   updatedAt?: T;
