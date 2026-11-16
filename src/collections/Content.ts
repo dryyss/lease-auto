@@ -1,15 +1,28 @@
+import { revalidatePath } from 'next/cache'
 import type { CollectionConfig } from 'payload'
 
 import { anyone, publishedOrStaff, staff } from '@/access'
 import { slugField } from '@/fields/slug'
 
+/** Pages qui affichent les avis : rafraîchies tout de suite, sinon un ajout attend le cache (jusqu'à 1 h). */
+const refreshReviewPages = () => {
+  try {
+    revalidatePath('/')
+    revalidatePath('/agence')
+  } catch {
+    // Hors serveur Next (scripts pnpm) : rien à rafraîchir, le cache expirera de lui-même.
+  }
+}
+
 // PUB-16 : avis et commentaires RÉELS (Google, Instagram, TikTok), mis en avant depuis l'administration.
-// Jamais d'avis inventés : la loi l'interdit (pratique commerciale trompeuse).
+// Jamais d'avis inventés présentés comme vrais : la loi l'interdit. Les avis d'exemple (sourceId « exemple-… »)
+// sont étiquetés « Exemple » sur le site et supprimés avant la mise en ligne.
 export const Reviews: CollectionConfig = {
   slug: 'reviews',
   labels: { singular: 'Avis client', plural: 'Avis clients' },
   admin: { useAsTitle: 'firstName', defaultColumns: ['firstName', 'source', 'rating', 'date', 'featured'], group: 'Contenus' },
   access: { read: anyone, create: staff, update: staff, delete: staff },
+  hooks: { afterChange: [refreshReviewPages], afterDelete: [refreshReviewPages] },
   defaultSort: '-date',
   fields: [
     {
