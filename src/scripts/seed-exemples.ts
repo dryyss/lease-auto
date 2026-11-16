@@ -9,6 +9,7 @@
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { DEMO_CUSTOMER } from '@/lib/demo-customer'
 import type { Request } from '@/payload-types'
 
 const payload = await getPayload({ config })
@@ -56,6 +57,62 @@ for (const [i, r] of REVIEWS.entries()) {
   reviewsCreated++
 }
 console.log(`Avis d'exemple : ${reviewsCreated} créé(s)`)
+
+// Acheteur de démonstration pour l'espace client (/mon-espace) : un financement à l'étude avec pièces manquantes,
+// une reprise déjà traitée et un essai à venir. Créé à part, sans doublon.
+const demoExists = await payload.count({ collection: 'requests', where: { reference: { equals: DEMO_CUSTOMER.reference } }, overrideAccess: true })
+if (!demoExists.totalDocs) {
+  const [car, advisor] = await Promise.all([
+    payload.find({ collection: 'vehicles', where: { _status: { equals: 'published' } }, sort: 'price', limit: 1, depth: 0, overrideAccess: true }),
+    payload.find({ collection: 'users', where: { role: { equals: 'commercial' } }, limit: 1, depth: 0, overrideAccess: true }),
+  ])
+  const who = { firstName: DEMO_CUSTOMER.firstName, lastName: DEMO_CUSTOMER.lastName, email: DEMO_CUSTOMER.email, phone: DEMO_CUSTOMER.phone, postalCode: '93800', source: SOURCE }
+  const day = 86_400_000
+  await payload.create({
+    collection: 'requests',
+    overrideAccess: true,
+    context: ctx,
+    data: {
+      ...who,
+      reference: DEMO_CUSTOMER.reference,
+      type: 'financing',
+      status: 'review',
+      vehicle: car.docs[0]?.id,
+      formula: 'loa',
+      months: 48,
+      deposit: 2000,
+      profile: 'cdi',
+      monthlyIncome: 2400,
+      missingDocuments: true,
+      assignedTo: advisor.docs[0]?.id,
+      createdAt: new Date(Date.now() - 2 * day).toISOString(),
+    } as never,
+  })
+  await payload.create({
+    collection: 'requests',
+    overrideAccess: true,
+    context: ctx,
+    data: {
+      ...who,
+      reference: 'LA-DEMO-REPRISE',
+      type: 'tradein',
+      status: 'delivered',
+      tradeIn: { brand: 'Renault', model: 'Clio IV 0.9 TCe', year: 2017, mileage: 86000 },
+      assignedTo: advisor.docs[0]?.id,
+      createdAt: new Date(Date.now() - 9 * day).toISOString(),
+    } as never,
+  })
+  // Essai dans 3 jours à 14 h, heure de Paris (13 h UTC en hiver).
+  const slot = new Date(Date.now() + 3 * day)
+  slot.setUTCHours(13, 0, 0, 0)
+  await payload.create({
+    collection: 'appointments',
+    overrideAccess: true,
+    context: ctx,
+    data: { name: `${DEMO_CUSTOMER.firstName} ${DEMO_CUSTOMER.lastName}`, email: DEMO_CUSTOMER.email, phone: DEMO_CUSTOMER.phone, startsAt: slot.toISOString(), kind: 'test-drive', status: 'confirmed', vehicle: car.docs[0]?.id } as never,
+  })
+  console.log(`Acheteur de démonstration créé : ${DEMO_CUSTOMER.reference} / ${DEMO_CUSTOMER.email}`)
+}
 
 const already = await payload.count({ collection: 'requests', where: { source: { equals: SOURCE } }, overrideAccess: true })
 if (already.totalDocs > 0) {

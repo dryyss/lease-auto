@@ -64,9 +64,15 @@ export function FinancingForm({
             Votre référence : <strong className="text-primary">{r.reference}</strong>. Un conseiller vous répond sous 48 h ouvrées.
           </p>
           {r.message && <p className="mt-2 text-ink-2">{r.message}</p>}
-          <Link href="/vehicules" className="btn-ghost mt-6">
-            Retour aux véhicules
-          </Link>
+          <p className="mt-2 text-ink-2">Suivez l’avancement de votre dossier dans votre espace, avec cette référence et votre e-mail.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href={`/mon-espace?ref=${encodeURIComponent(r.reference ?? "")}`} className="btn-primary">
+              Suivre ma demande
+            </Link>
+            <Link href="/vehicules" className="btn-ghost">
+              Retour aux véhicules
+            </Link>
+          </div>
         </>
       )}
     >

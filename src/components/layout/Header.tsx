@@ -124,13 +124,12 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
               </a>
             )}
             <FavoritesLink />
-            {/* Vrai lien, pas next/link : /admin redirige vers Auth0 (autre domaine), qu'une navigation interne ne sait pas suivre. */}
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/admin" aria-label="Accéder à mon espace" className="btn-dark hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
+            {/* Espace des acheteurs (suivi de demande). L’équipe passe par le lien « administration » de cette page. */}
+            <Link href="/mon-espace" aria-label="Accéder à mon espace" className="btn-dark hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
               <UserRound className="size-4" aria-hidden />
               <span className="xl:hidden">Mon espace</span>
               <span className="hidden 2xl:inline">Accéder à mon espace</span>
-            </a>
+            </Link>
             <Link href="/demande" className="btn-primary hidden shrink-0 px-3.5! py-2.5! sm:inline-flex">
               <CarFront className="size-4" aria-hidden />
               <span className="xl:hidden">Demande</span>
@@ -159,10 +158,9 @@ export function Header({ phone, phoneHref }: { phone?: string | null; phoneHref?
                 {item.label}
               </Link>
             ))}
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/admin" className="btn-dark mt-3 w-full">
+            <Link href="/mon-espace" className="btn-dark mt-3 w-full">
               Accéder à mon espace
-            </a>
+            </Link>
             <Link href="/demande" className="btn-primary mt-3 w-full">
               Demander un financement
             </Link>
