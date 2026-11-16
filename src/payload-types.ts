@@ -1717,13 +1717,24 @@ export interface Setting {
   createdAt?: string | null;
 }
 /**
+ * Plages pendant lesquelles les clients peuvent réserver un essai ou un passage en ligne. Les horaires d’ouverture affichés sur le site se règlent dans Réglages.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "agenda".
  */
 export interface Agenda {
   id: number;
+  /**
+   * Ex. 45 : créneaux à 10:00, 10:45, 11:30…
+   */
   slotMinutes?: number | null;
+  /**
+   * Ex. 4 : à 10 h, le premier créneau proposé est 14 h.
+   */
   minNoticeHours?: number | null;
+  /**
+   * Une ligne par plage. Pour une pause déjeuner, mettez deux plages le même jour (ex. 10:00–12:30 puis 14:00–18:30).
+   */
   weekly?:
     | {
         day: '1' | '2' | '3' | '4' | '5' | '6' | '0';
@@ -1732,6 +1743,9 @@ export interface Agenda {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Congés, jours fériés : aucun rendez-vous proposé, et le site affiche « Fermé » ces jours-là.
+   */
   closures?:
     | {
         from: string;
