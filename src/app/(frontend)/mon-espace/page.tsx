@@ -164,8 +164,10 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
                 {/* Avancement : étapes franchies en vert, étape en cours en rouge. */}
                 <ol className={`mb-6 grid gap-3 ${financing ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
                   {steps.map((label, i) => {
-                    const done = !refused && i < current
-                    const now = !refused && i === current
+                    // Demande terminée : la dernière étape est franchie elle aussi (verte), plus rien n’est « en cours ».
+                    const finished = r.status === "delivered"
+                    const done = !refused && (i < current || finished)
+                    const now = !refused && !finished && i === current
                     return (
                       <li key={label} aria-current={now ? 'step' : undefined} className="flex items-center gap-3 sm:block">
                         <span className={`mb-0 block h-1.5 w-10 shrink-0 rounded-full sm:mb-2 sm:w-full ${done ? 'bg-emerald-500' : now ? 'bg-accent' : 'bg-line'}`} />
