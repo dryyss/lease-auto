@@ -228,7 +228,8 @@ export function ReviewsSection({
       <div className="space-y-10">
         {rows.map(({ network, items }, i) => {
           const { Logo, name } = NETWORKS[network]
-          const rated = items.filter((r) => r.rating)
+          // Pas de note moyenne calculée sur des avis d'exemple : elle passerait pour la vraie note Google.
+          const rated = items.some((r) => r.sourceId?.startsWith('exemple-')) ? [] : items.filter((r) => r.rating)
           const average = rated.length ? rated.reduce((s, r) => s + (r.rating ?? 0), 0) / rated.length : 0
           const link = links[network]
           const row = fillRow(items)
