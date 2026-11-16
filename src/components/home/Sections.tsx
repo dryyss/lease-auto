@@ -177,7 +177,13 @@ function ReviewCard({ review, network, hidden }: { review: Review; network: Netw
             “
           </span>
         )}
-        <Logo className="size-5 shrink-0" />
+        <span className="flex items-center gap-2">
+          {/* Avis de démonstration : toujours signalés, jamais présentés comme réels. */}
+          {review.sourceId?.startsWith('exemple-') && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold tracking-wide text-amber-800 uppercase">Exemple</span>
+          )}
+          <Logo className="size-5 shrink-0" />
+        </span>
       </div>
       <blockquote className="mb-4 line-clamp-5 flex-1 text-sm leading-relaxed text-ink-2">{review.text}</blockquote>
       <figcaption className="text-sm">

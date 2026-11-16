@@ -4,7 +4,8 @@
 //
 // Tout est reconnaissable : demandes d'origine « exemple », e-mails en @example.com (domaine réservé, rien n'est délivré),
 // newsletter préfixée « [Exemple] ». Aucun e-mail n'est envoyé : les crochets d'envoi sont coupés (skipEmails),
-// et la newsletter reste en brouillon. Pas de faux avis clients : les avis affichés doivent être réels.
+// et la newsletter reste en brouillon. Avis clients d'exemple : étiquetés « Exemple » sur le site (sourceId « exemple-… »),
+// jamais présentés comme de vrais avis, et supprimés avec le reste.
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
@@ -24,8 +25,37 @@ if (process.argv.includes('--supprimer')) {
   await del('requests', { source: { equals: SOURCE } })
   await del('subscribers', { email: { like: DOMAIN } })
   await del('campaigns', { subject: { like: '[Exemple]' } })
+  const { docs: reviews } = await payload.delete({ collection: 'reviews', where: { sourceId: { like: 'exemple-' } }, overrideAccess: true })
+  console.log(`reviews : ${reviews.length} supprimé(s)`)
   process.exit(0)
 }
+
+// Avis d'exemple (un bandeau par réseau) : créés à part, sans doublon, même si les demandes d'exemple existent déjà.
+const REVIEWS: { source: 'google' | 'instagram' | 'tiktok'; name: string; rating?: number; days: number; text: string }[] = [
+  { source: 'google', name: 'Sarah', rating: 5, days: 6, text: 'Dossier LOA monté en quelques jours, conseiller très clair sur la mensualité et l’option d’achat. Voiture livrée propre et révisée.' },
+  { source: 'google', name: 'Karim', rating: 5, days: 14, text: 'Indépendant VTC, on m’avait refusé ailleurs. Ici, dossier étudié sérieusement et voiture obtenue.' },
+  { source: 'google', name: 'Julie', rating: 4, days: 23, text: 'Bon accueil à l’agence d’Épinay, essai sur rendez-vous, explications honnêtes. Un peu d’attente pour les papiers.' },
+  { source: 'google', name: 'Mehdi', rating: 5, days: 37, text: 'Reprise de mon ancienne voiture et LLD sans surprise. Je recommande.' },
+  { source: 'instagram', name: '@nadia.drive', days: 4, text: 'Merci Lease Auto pour la Clio, livraison nickel !' },
+  { source: 'instagram', name: '@yanis_93', days: 11, text: 'Équipe au top, ils m’ont tout expliqué pour la LOA.' },
+  { source: 'instagram', name: '@lea.mtn', days: 19, text: 'Deuxième voiture prise chez eux, toujours aussi pro.' },
+  { source: 'tiktok', name: '@fatou.auto', days: 3, text: 'La remise des clés, trop contente de ma Peugeot 208 !' },
+  { source: 'tiktok', name: '@samir.vtc', days: 9, text: 'VTC et financé, ils l’ont fait. Merci la team Lease Auto.' },
+  { source: 'tiktok', name: '@ines_rd', days: 16, text: 'Ambiance au top à l’agence, et la voiture est parfaite.' },
+]
+let reviewsCreated = 0
+for (const [i, r] of REVIEWS.entries()) {
+  const sourceId = `exemple-${i + 1}`
+  const exists = await payload.count({ collection: 'reviews', where: { sourceId: { equals: sourceId } }, overrideAccess: true })
+  if (exists.totalDocs) continue
+  await payload.create({
+    collection: 'reviews',
+    overrideAccess: true,
+    data: { sourceId, source: r.source, firstName: r.name, rating: r.rating, text: r.text, date: new Date(Date.now() - r.days * 86_400_000).toISOString(), featured: true },
+  })
+  reviewsCreated++
+}
+console.log(`Avis d'exemple : ${reviewsCreated} créé(s)`)
 
 const already = await payload.count({ collection: 'requests', where: { source: { equals: SOURCE } }, overrideAccess: true })
 if (already.totalDocs > 0) {
