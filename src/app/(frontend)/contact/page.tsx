@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 
 import { CardsSection } from '@/components/content/Blocks'
 import { ContactForm } from '@/components/forms/SimpleForms'
-import { ContactAside } from '@/components/ui/ContactAside'
+import { AgencyMapCard, ContactDirectCard, HoursCard } from '@/components/contact/AgencyCards'
+import { SectionHeader } from '@/components/home/Sections'
 import { PageHero } from '@/components/ui/PageHero'
 import { CONTACT } from '@/lib/page-content'
 
@@ -23,8 +24,18 @@ export default async function ContactPage({ searchParams }: Props) {
         <div className="card p-6 sm:p-8">
           <ContactForm callback={rappel === '1'} />
         </div>
-        <ContactAside />
+        <aside className="lg:sticky lg:top-24">
+          <ContactDirectCard />
+        </aside>
       </div>
+
+      <section className="container-site pb-16">
+        <SectionHeader eyebrow="Venir à l’agence" title="Passez nous voir à Épinay-sur-Seine" intro="Un conseiller vous reçoit pour essayer un véhicule ou monter votre dossier avec vous." />
+        <div className="grid items-stretch gap-6 lg:grid-cols-[2fr_3fr]">
+          <HoursCard />
+          <AgencyMapCard />
+        </div>
+      </section>
 
       <CardsSection eyebrow="Nous écrire" title="Ce que nous pouvons faire pour vous" items={CONTACT.reasons} columns={4} soft />
     </>
