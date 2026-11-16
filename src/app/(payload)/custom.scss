@@ -990,3 +990,113 @@ a.la-kpi:hover {
 #nav-site {
   --la-ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M15%203h6v6M10%2014%2021%203M18%2013v6a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2V8a2%202%200%200%201%202-2h6%22%2F%3E%3C%2Fsvg%3E");
 }
+
+/* Fenêtre de confirmation du tableau de bord (DashAction) : remplace la boîte grise du navigateur. */
+.la-btn--danger {
+  background: var(--la-red);
+  border-color: var(--la-red);
+  &:hover {
+    background: #ac1013;
+    border-color: #ac1013;
+  }
+}
+.la-dialog {
+  width: min(460px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--la-navy);
+  box-shadow: 0 24px 60px rgba(13, 36, 73, 0.28);
+  text-align: left;
+  white-space: normal;
+  &::backdrop {
+    background: rgba(13, 36, 73, 0.45);
+    backdrop-filter: blur(2px);
+  }
+  &[open] {
+    animation: la-dialog-in 0.16s ease-out;
+  }
+  form {
+    padding: 24px;
+  }
+  &__title {
+    margin: 0 0 8px;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--la-navy);
+  }
+  &__text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--la-ink-2);
+  }
+  &__fields {
+    display: grid;
+    gap: 6px;
+    margin-top: 18px;
+  }
+  &__label {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--la-navy);
+    span[aria-hidden] {
+      color: var(--la-red);
+    }
+  }
+  &__input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--la-line);
+    border-radius: 10px;
+    background: #fff;
+    font: inherit;
+    font-size: 14px;
+    color: var(--la-navy);
+    resize: vertical;
+    &:focus {
+      outline: none;
+      border-color: var(--la-red);
+      box-shadow: 0 0 0 3px rgba(222, 29, 34, 0.15);
+    }
+  }
+  &__hint {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--la-ink-2);
+  }
+  &__error {
+    margin: 14px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fdecec;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--la-red);
+  }
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+    .la-btn {
+      height: 40px;
+      padding: 0 18px;
+    }
+  }
+}
+@keyframes la-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .la-dialog[open] {
+    animation: none;
+  }
+}

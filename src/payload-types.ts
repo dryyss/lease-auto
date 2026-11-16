@@ -390,6 +390,13 @@ export interface Request {
   reference?: string | null;
   type: 'financing' | 'tradein' | 'contact' | 'callback';
   status: 'new' | 'review' | 'approved' | 'refused' | 'delivered';
+  /**
+   * Usage interne, non envoyé au client.
+   */
+  refusalReason?:
+    | ('income' | 'debt' | 'banking' | 'seniority' | 'documents' | 'lender' | 'withdrawn' | 'unreachable' | 'other')
+    | null;
+  refusalNote?: string | null;
   assignedTo?: (number | null) | User;
   lastActionAt?: string | null;
   deliveredAt?: string | null;
@@ -1091,6 +1098,8 @@ export interface RequestsSelect<T extends boolean = true> {
   reference?: T;
   type?: T;
   status?: T;
+  refusalReason?: T;
+  refusalNote?: T;
   assignedTo?: T;
   lastActionAt?: T;
   deliveredAt?: T;

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { headers as nextHeaders } from 'next/headers'
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 
+import { refusalProblem, type RefusalReason } from '@/lib/refusal-reasons'
 import type { Request, User } from '@/payload-types'
 
 type Result = { ok: true } | { ok: false; error: string }
@@ -76,7 +77,9 @@ export async function advanceRequest(id: number): Promise<Result> {
   )
 }
 
-export async function refuseRequest(id: number): Promise<Result> {
+export async function refuseRequest(id: number, reason?: string, note?: string): Promise<Result> {
+  const problem = refusalProblem(reason, note)
+  if (problem) return { ok: false, error: problem }
   const { payload, user } = await staffContext()
   if (!user) return { ok: false, error: 'Session expirée.' }
   const current = await loadRequest(payload, user, id)
@@ -90,7 +93,7 @@ export async function refuseRequest(id: number): Promise<Result> {
       depth: 0,
       overrideAccess: false,
       user,
-      data: { status: 'refused' },
+      data: { status: 'refused', refusalReason: reason as RefusalReason, refusalNote: note?.trim().slice(0, 1000) || null },
     }),
   )
 }

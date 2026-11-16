@@ -372,7 +372,7 @@ export async function Dashboard() {
                                 {/* Colonne étroite : téléphone en bouton, le numéro reste lisible au survol et par les lecteurs d'écran */}
                                 <a className="la-icon-btn" href={tel(a.phone)} title={a.phone} aria-label={`Appeler ${a.name}, ${a.phone}`}><Icon name="phone" /></a>
                                 {past && <DashAction id={a.id} kind="done" label="Honoré" tone="ghost" />}
-                                <DashAction id={a.id} kind="cancel" label={past ? 'Pas venu' : 'Annuler'} tone="ghost" confirm={past ? undefined : `Annuler le rendez-vous de ${a.name} ? Prévenez le client par téléphone.`} />
+                                <DashAction id={a.id} kind="cancel" label={past ? 'Pas venu' : 'Annuler'} tone="ghost" confirm={past ? undefined : { title: 'Annuler ce rendez-vous ?', text: `Le rendez-vous de ${a.name} sera annulé. Prévenez le client par téléphone.`, cta: 'Annuler le rendez-vous', danger: true }} />
                               </div>
                             </div>
                           </li>
@@ -504,10 +504,10 @@ function RequestRow({ r, late = false, showStatus = false, owner = null }: { r: 
         <a className="la-phone" href={tel(r.phone)}><Icon name="phone" />{r.phone}</a>
         <span className="la-row-btns">
         {r.status === 'new' && <DashAction id={r.id} kind="advance" label="Prendre en charge" />}
-        {r.status === 'review' && <DashAction id={r.id} kind="advance" label="Accorder" confirm={`Confirmer l’accord pour ${r.firstName} ${r.lastName} ?${MAIL ? ' Le client reçoit un e-mail.' : ' Pensez à prévenir le client.'}`} />}
-        {r.status === 'approved' && <DashAction id={r.id} kind="advance" label="Marquer livrée" confirm={`Le véhicule de ${r.firstName} ${r.lastName} a été livré ?${MAIL ? ' Le client reçoit un e-mail, puis une demande d’avis.' : ''}`} />}
+        {r.status === 'review' && <DashAction id={r.id} kind="advance" label="Accorder" confirm={{ title: 'Accorder le financement ?', text: `Le dossier de ${r.firstName} ${r.lastName} passe en « Accord ».${MAIL ? ' Le client reçoit un e-mail.' : ' Pensez à prévenir le client.'}`, cta: 'Confirmer l’accord' }} />}
+        {r.status === 'approved' && <DashAction id={r.id} kind="advance" label="Marquer livrée" confirm={{ title: 'Véhicule livré ?', text: `Le dossier de ${r.firstName} ${r.lastName} est clôturé comme livré.${MAIL ? ' Le client reçoit un e-mail, puis une demande d’avis.' : ''}`, cta: 'Confirmer la livraison' }} />}
         {(r.status === 'new' || r.status === 'review') && (
-          <DashAction id={r.id} kind="refuse" label="Refuser" tone="ghost" confirm={`Refuser la demande de ${r.firstName} ${r.lastName} ?${MAIL ? ' Le client est prévenu par e-mail.' : ' Pensez à prévenir le client.'}`} />
+          <DashAction id={r.id} kind="refuse" label="Refuser" tone="ghost" confirm={{ title: 'Refuser la demande', text: `Demande de ${r.firstName} ${r.lastName}.${MAIL ? ' Le client est prévenu par e-mail.' : ' Pensez à prévenir le client.'}`, cta: 'Refuser la demande', danger: true }} />
         )}
         </span>
       </span>

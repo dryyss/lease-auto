@@ -1,7 +1,8 @@
-import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload'
+import { ValidationError, type CollectionAfterChangeHook, type CollectionBeforeChangeHook, type CollectionConfig } from 'payload'
 
 import { admins, staff } from '@/access'
 import { notifyStatusChange } from '@/lib/notifications'
+import { REFUSAL_REASONS, refusalProblem } from '@/lib/refusal-reasons'
 import type { Request } from '@/payload-types'
 
 const statuses = [
@@ -22,6 +23,14 @@ const trackHistory: CollectionBeforeChangeHook = ({ data, originalDoc, req, oper
   ]
   if (data.status !== 'new') data.lastActionAt = new Date().toISOString()
   if (data.status === 'delivered' && !data.deliveredAt) data.deliveredAt = new Date().toISOString()
+  return data
+}
+
+// Passage en « Refus » : motif obligatoire (« Autre » avec une précision), depuis la fiche comme depuis le tableau de bord.
+const requireRefusalReason: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
+  if (data.status !== 'refused' || originalDoc?.status === 'refused') return data
+  const problem = refusalProblem(data.refusalReason ?? originalDoc?.refusalReason, data.refusalNote ?? originalDoc?.refusalNote)
+  if (problem) throw new ValidationError({ collection: 'requests', errors: [{ path: 'refusalReason', message: problem }] })
   return data
 }
 
@@ -52,6 +61,7 @@ export const Requests: CollectionConfig = {
   hooks: {
     afterChange: [emailStatusChange],
     beforeChange: [
+      requireRefusalReason,
       trackHistory,
       ({ data, operation }) => {
         if (operation === 'create' && !data.reference) {
@@ -88,6 +98,19 @@ export const Requests: CollectionConfig = {
       index: true,
       admin: { position: 'sidebar', components: { Cell: '@/components/admin/StatusCell#StatusCell' } },
       options: [...statuses],
+    },
+    {
+      name: 'refusalReason',
+      label: 'Motif du refus',
+      type: 'select',
+      options: REFUSAL_REASONS.map((r) => ({ ...r })),
+      admin: { position: 'sidebar', condition: (data) => data?.status === 'refused', description: 'Usage interne, non envoyé au client.' },
+    },
+    {
+      name: 'refusalNote',
+      label: 'Précision sur le refus',
+      type: 'textarea',
+      admin: { position: 'sidebar', condition: (data) => data?.status === 'refused' },
     },
     { name: 'assignedTo', label: 'Suivi par', type: 'relationship', relationTo: 'users', admin: { position: 'sidebar' } },
     { name: 'lastActionAt', label: 'Dernière action équipe', type: 'date', admin: { position: 'sidebar', readOnly: true } },
