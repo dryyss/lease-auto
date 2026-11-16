@@ -66,9 +66,9 @@ export const Vehicles: CollectionConfig = {
   labels: { singular: 'Véhicule', plural: 'Véhicules' },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'price', 'monthlyFrom', 'status', '_status', 'updatedAt'],
+    defaultColumns: ['photo', 'title', 'plate', 'price', 'monthlyFrom', 'status', '_status', 'updatedAt'],
     group: 'Stock',
-    listSearchableFields: ['title', 'model', 'reference'],
+    listSearchableFields: ['title', 'plate', 'reference'],
   },
   versions: { drafts: true, maxPerDoc: 20 },
   access: {
@@ -91,12 +91,38 @@ export const Vehicles: CollectionConfig = {
       fields: [
         { name: 'title', label: 'Titre de l’annonce', type: 'text', required: true, admin: { description: 'Ex. Peugeot 3008 1.2 PureTech 130 Allure' } },
         { name: 'reference', label: 'Référence interne', type: 'text', index: true },
+        {
+          name: 'plate',
+          label: 'Immatriculation',
+          type: 'text',
+          index: true,
+          // Interne : jamais renvoyée au site public ni à l'API publique.
+          access: { read: ({ req }) => Boolean(req.user) },
+          admin: { description: 'Ex. AB-123-CD. Visible seulement par l’équipe.', components: { Cell: '@/components/admin/VehicleCells#PlateCell' } },
+          hooks: {
+            beforeChange: [
+              ({ value }) => {
+                if (typeof value !== 'string') return value
+                const compact = value.toUpperCase().replace(/[\s-]+/g, '')
+                const siv = compact.match(/^([A-Z]{2})(\d{3})([A-Z]{2})$/)
+                return siv ? `${siv[1]}-${siv[2]}-${siv[3]}` : value.toUpperCase().trim() || null
+              },
+            ],
+          },
+        },
       ],
+    },
+    {
+      // Colonne « Photo » de la liste : première image de la galerie (rien n'est stocké).
+      name: 'photo',
+      label: 'Photo',
+      type: 'ui',
+      admin: { components: { Cell: '@/components/admin/VehicleCells#VehicleThumbCell' } },
     },
     slugField(['title', 'reference']),
     {
       name: 'status',
-      label: 'Statut',
+      label: 'Disponibilité',
       type: 'select',
       required: true,
       defaultValue: 'available',
@@ -216,13 +242,13 @@ export const Vehicles: CollectionConfig = {
         {
           label: 'Prix et financement',
           fields: [
-            { name: 'price', label: 'Prix total TTC (€)', type: 'number', required: true, min: 0 },
+            { name: 'price', label: 'Prix total TTC (€)', type: 'number', required: true, min: 0, admin: { components: { Cell: '@/components/admin/VehicleCells#EuroCell' } } },
             {
               name: 'monthlyFrom',
               label: 'Mensualité « à partir de » (€)',
               type: 'number',
               index: true,
-              admin: { readOnly: true, description: 'Calculée automatiquement : la plus basse des formules.' },
+              admin: { readOnly: true, description: 'Calculée automatiquement : la plus basse des formules.', components: { Cell: '@/components/admin/VehicleCells#EuroCell' } },
             },
             {
               name: 'monthlies',

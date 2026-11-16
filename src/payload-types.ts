@@ -184,6 +184,10 @@ export interface Vehicle {
   title: string;
   reference?: string | null;
   /**
+   * Ex. AB-123-CD. Visible seulement par l’équipe.
+   */
+  plate?: string | null;
+  /**
    * Adresse de la page. Générée automatiquement si vide.
    */
   slug?: string | null;
@@ -1002,6 +1006,7 @@ export interface VehiclesSelect<T extends boolean = true> {
   model?: T;
   title?: T;
   reference?: T;
+  plate?: T;
   slug?: T;
   status?: T;
   soldAt?: T;
