@@ -75,7 +75,7 @@ export async function runAutomations(payload: Payload) {
   const reviewDays = settings.retention?.reviewRequestDays ?? 5
   const delivered = await payload.find({
     collection: 'requests',
-    where: { and: [{ status: { equals: 'delivered' } }, { deliveredAt: { less_than: iso(now - reviewDays * DAY) } }, { reviewRequestedAt: { exists: false } }] },
+    where: { and: [{ type: { equals: 'financing' } }, { status: { equals: 'delivered' } }, { deliveredAt: { less_than: iso(now - reviewDays * DAY) } }, { reviewRequestedAt: { exists: false } }] },
     limit: 100,
     depth: 0,
   })

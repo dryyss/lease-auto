@@ -37,6 +37,8 @@ const requireRefusalReason: CollectionBeforeChangeHook = ({ data, originalDoc })
 // MAIL-02 : e-mail au client à chaque changement de statut fait par l'équipe.
 const emailStatusChange: CollectionAfterChangeHook<Request> = async ({ doc, previousDoc, operation, req, context }) => {
   if (operation !== 'update' || context.skipEmails || doc.status === previousDoc?.status) return doc
+  // Les textes (étude, accord, livraison) ne valent que pour un financement : pas d'e-mail « accord obtenu » pour un message ou un rappel.
+  if (doc.type !== 'financing') return doc
   await notifyStatusChange(req.payload, doc)
   return doc
 }

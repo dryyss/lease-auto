@@ -28,10 +28,11 @@ async function attempt(run: () => Promise<unknown>): Promise<Result> {
   return { ok: true }
 }
 
-const forward: Partial<Record<Request['status'], Request['status']>> = {
-  new: 'review',
-  review: 'approved',
-  approved: 'delivered',
+/** Financement : étude, accord, livraison. Contact, rappel, reprise : prise en charge puis clôture (« delivered » = traitée). */
+const nextStatus = (r: Request): Request['status'] | undefined => {
+  if (r.status === 'new') return 'review'
+  if (r.type !== 'financing') return r.status === 'review' || r.status === 'approved' ? 'delivered' : undefined
+  return r.status === 'review' ? 'approved' : r.status === 'approved' ? 'delivered' : undefined
 }
 
 async function staffContext(): Promise<
@@ -60,7 +61,7 @@ export async function advanceRequest(id: number): Promise<Result> {
   if (!user) return { ok: false, error: 'Session expirée.' }
   const current = await loadRequest(payload, user, id)
   if (!current) return { ok: false, error: 'Demande introuvable.' }
-  const status = forward[current.status]
+  const status = nextStatus(current)
   if (!status) return { ok: false, error: 'Cette demande est déjà close.' }
   return attempt(() =>
     payload.update({

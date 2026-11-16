@@ -151,7 +151,7 @@ export async function Dashboard() {
 
   const last30 = recent.docs.filter((r) => created(r) >= now - 30 * DAY)
   const byType = (Object.keys(TYPE_LABELS) as Request['type'][]).map((t) => ({ t, n: last30.filter((r) => r.type === t).length }))
-  const decided = last30.filter((r) => ['approved', 'delivered', 'refused'].includes(r.status))
+  const decided = last30.filter((r) => r.type === 'financing' && ['approved', 'delivered', 'refused'].includes(r.status))
   const approvalRate = decided.length ? Math.round((decided.filter((r) => r.status !== 'refused').length / decided.length) * 100) : null
   const firstReplies = last30.flatMap((r) => {
     const first = r.history?.find((h) => h.status && h.status !== 'new' && h.at)
@@ -234,11 +234,9 @@ export async function Dashboard() {
         </div>
         <div className="la-head-side">
           <Link className="la-cta la-cta--ghost" href={`${REQ}?sort=-createdAt`}>Toutes les demandes</Link>
-          {isAdmin && (
-            <Link className="la-cta" href={`${CARS}/create`}>
-              <Icon name="plus" /> Ajouter un véhicule
-            </Link>
-          )}
+          <Link className="la-cta" href={`${CARS}/create`}>
+            <Icon name="plus" /> Ajouter un véhicule
+          </Link>
         </div>
       </header>
 
@@ -259,7 +257,7 @@ export async function Dashboard() {
             ))}
           </span>
         </Link>
-        <Link className="la-kpi" href={`${REQ}?where[status][in]=approved,delivered,refused`}>
+        <Link className="la-kpi" href={`${REQ}?where[type][equals]=financing&where[status][in]=approved,delivered,refused`}>
           <span className="la-kpi-label">Taux d’accord</span>
           <span className="la-kpi-value">{approvalRate == null ? '–' : `${approvalRate} %`}</span>
           <span className="la-kpi-hint">{decided.length ? `sur ${plural(decided.length, 'dossier tranché', 'dossiers tranchés')}, 30 jours` : 'aucun dossier tranché sur 30 jours'}</span>
@@ -483,7 +481,10 @@ function Card({
 }
 
 function RequestRow({ r, late = false, showStatus = false, owner = null }: { r: Request; late?: boolean; showStatus?: boolean; owner?: string | null }) {
-  const [label, tone] = STATUS_TAG[r.status]
+  const financing = r.type === 'financing'
+  const who = `${r.firstName} ${r.lastName}`
+  // « Livrée » n'a de sens que pour un financement : ailleurs, la demande est simplement traitée.
+  const [label, tone] = !financing && r.status === 'delivered' ? ['Traitée', ''] : !financing && r.status === 'refused' ? ['Sans suite', ''] : STATUS_TAG[r.status]
   return (
     <li className="la-row">
       <Link className="la-row-main" href={`${REQ}/${r.id}`}>
@@ -504,10 +505,22 @@ function RequestRow({ r, late = false, showStatus = false, owner = null }: { r: 
         <a className="la-phone" href={tel(r.phone)}><Icon name="phone" />{r.phone}</a>
         <span className="la-row-btns">
         {r.status === 'new' && <DashAction id={r.id} kind="advance" label="Prendre en charge" />}
-        {r.status === 'review' && <DashAction id={r.id} kind="advance" label="Accorder" confirm={{ title: 'Accorder le financement ?', text: `Le dossier de ${r.firstName} ${r.lastName} passe en « Accord ».${MAIL ? ' Le client reçoit un e-mail.' : ' Pensez à prévenir le client.'}`, cta: 'Confirmer l’accord' }} />}
-        {r.status === 'approved' && <DashAction id={r.id} kind="advance" label="Marquer livrée" confirm={{ title: 'Véhicule livré ?', text: `Le dossier de ${r.firstName} ${r.lastName} est clôturé comme livré.${MAIL ? ' Le client reçoit un e-mail, puis une demande d’avis.' : ''}`, cta: 'Confirmer la livraison' }} />}
+        {r.status === 'review' && financing && <DashAction id={r.id} kind="advance" label="Accorder" confirm={{ title: 'Accorder le financement ?', text: `Le dossier de ${who} passe en « Accord ».${MAIL ? ' Le client reçoit un e-mail.' : ' Pensez à prévenir le client.'}`, cta: 'Confirmer l’accord' }} />}
+        {/* Contact, rappel, reprise : pas d'accord de financement à donner, on clôture une fois le client recontacté. */}
+        {(r.status === 'review' || r.status === 'approved') && !financing && <DashAction id={r.id} kind="advance" label="Clôturer" confirm={{ title: 'Clôturer cette demande ?', text: `La demande de ${who} est marquée comme traitée.`, cta: 'Clôturer' }} />}
+        {r.status === 'approved' && financing && <DashAction id={r.id} kind="advance" label="Marquer livrée" confirm={{ title: 'Véhicule livré ?', text: `Le dossier de ${who} est clôturé comme livré.${MAIL ? ' Le client reçoit un e-mail, puis une demande d’avis.' : ''}`, cta: 'Confirmer la livraison' }} />}
         {(r.status === 'new' || r.status === 'review') && (
-          <DashAction id={r.id} kind="refuse" label="Refuser" tone="ghost" confirm={{ title: 'Refuser la demande', text: `Demande de ${r.firstName} ${r.lastName}.${MAIL ? ' Le client est prévenu par e-mail.' : ' Pensez à prévenir le client.'}`, cta: 'Refuser la demande', danger: true }} />
+          <DashAction
+            id={r.id}
+            kind="refuse"
+            label={financing ? 'Refuser' : 'Classer'}
+            tone="ghost"
+            confirm={
+              financing
+                ? { title: 'Refuser la demande', text: `Demande de ${who}.${MAIL ? ' Le client est prévenu par e-mail.' : ' Pensez à prévenir le client.'}`, cta: 'Refuser la demande', danger: true }
+                : { title: 'Classer sans suite', text: `Demande de ${who}. Aucun e-mail n’est envoyé au client.`, cta: 'Classer sans suite', danger: true }
+            }
+          />
         )}
         </span>
       </span>
