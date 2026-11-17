@@ -4,6 +4,8 @@ import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+
+import { databaseStorage } from './lib/db-storage'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { fr } from '@payloadcms/translations/languages/fr'
 import path from 'path'
@@ -81,13 +83,17 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
-    // Fichiers sur Vercel Blob en production (le disque Vercel n'est pas conservé), disque local sinon.
-    // Suffixe aléatoire : les adresses des justificatifs ne se devinent pas.
+    // Fichiers : Vercel Blob si un jeton est fourni, sinon dans la base elle-même (le disque de Vercel n'est pas conservé).
+    // En local sans base distante, le disque suffit. Pas de « prefix » : il ajouterait une colonne au schéma.
     vercelBlobStorage({
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
       token: process.env.BLOB_READ_WRITE_TOKEN,
       addRandomSuffix: true,
-      collections: { media: true, documents: { prefix: 'justificatifs' } },
+      collections: { media: true, documents: true },
+    }),
+    databaseStorage({
+      enabled: !process.env.BLOB_READ_WRITE_TOKEN && Boolean(process.env.VERCEL || process.env.FILES_IN_DATABASE),
+      collections: ['media', 'documents'],
     }),
     // ADM-08 : export tableur des abonnés et des demandes
     importExportPlugin({

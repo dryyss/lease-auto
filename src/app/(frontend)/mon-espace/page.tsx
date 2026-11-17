@@ -11,6 +11,7 @@ import { BUSINESS_DOCS, isBusinessProfile, PERSONAL_DOCS } from '@/lib/required-
 import type { Appointment, Request } from '@/payload-types'
 
 import { closeSpace, openDemoSpace } from './actions'
+import { DocumentUpload } from './DocumentUpload'
 import { SpaceLogin } from './SpaceLogin'
 
 export const metadata: Metadata = { title: 'Mon espace', robots: { index: false, follow: false } }
@@ -113,10 +114,12 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
         limit: 200,
         depth: 0,
         overrideAccess: true,
-        select: { request: true },
+        select: { request: true, kind: true },
       })
     : { docs: [] }
-  const received = (id: number) => documents.docs.filter((d) => (typeof d.request === 'object' ? d.request?.id : d.request) === id).length
+  const docsOf = (id: number) => documents.docs.filter((d) => (typeof d.request === 'object' ? d.request?.id : d.request) === id)
+  const received = (id: number) => docsOf(id).length
+  const receivedKinds = (id: number) => docsOf(id).reduce<Record<string, number>>((acc, d) => ({ ...acc, [d.kind ?? 'other']: (acc[d.kind ?? 'other'] ?? 0) + 1 }), {})
 
   const firstName = requests.docs[0]?.firstName
   const active = requests.docs.filter((r) => r.status !== 'delivered' && r.status !== 'refused').length
@@ -206,27 +209,18 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
                   </dl>
                 )}
 
-                {financing && (r.status === 'new' || r.status === 'review') && (
+                {financing && (r.status === 'new' || r.status === 'review' || r.status === 'approved') && (
                   <section className="mt-6 border-t border-line pt-6">
                     <h3 className="mb-1 flex items-center gap-2 font-black text-primary">
                       <FileText className="size-5 text-accent" aria-hidden /> Vos justificatifs
                     </h3>
                     <p className="mb-4 text-sm text-ink-2">
-                      {count > 0 ? `${count} pièce${count > 1 ? 's' : ''} reçue${count > 1 ? 's' : ''}. ` : ''}
                       {r.missingDocuments
-                        ? 'Il nous manque encore des pièces pour étudier votre dossier. Préparez celles de la liste : votre conseiller vous indique comment nous les transmettre.'
-                        : 'Votre dossier est complet, rien à envoyer pour le moment.'}
+                        ? 'Envoyez vos pièces ici, en PDF ou en photo (4 Mo par envoi). Votre conseiller est prévenu et les vérifie.'
+                        : 'Votre dossier est complet. Vous pouvez encore ajouter une pièce si votre conseiller vous le demande.'}
+                      {count > 0 ? ` ${count} fichier${count > 1 ? 's' : ''} reçu${count > 1 ? 's' : ''} au total.` : ''}
                     </p>
-                    {r.missingDocuments && (
-                      <ul className="grid gap-2 text-sm text-ink-2 sm:grid-cols-2">
-                        {docs.map((d) => (
-                          <li key={d.label} className="flex gap-2.5">
-                            <span aria-hidden className="mt-[0.45rem] size-1.5 shrink-0 rounded-full bg-accent" />
-                            {d.label}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    <DocumentUpload requestId={r.id} docs={docs} receivedKinds={receivedKinds(r.id)} />
                   </section>
                 )}
 

@@ -5,13 +5,10 @@ import { notifyNewRequest } from '@/lib/notifications'
 import { payloadClient } from '@/lib/payload'
 import { emailEnabled, uploadsEnabled } from '@/lib/services'
 import { checkSpam } from '@/lib/spam'
+import { DOCUMENT_KINDS, readFiles } from '@/lib/uploads'
 import type { Document, Request } from '@/payload-types'
 
 export type ActionResult = { ok: true; reference?: string; message?: string } | { ok: false; error: string }
-
-const MAX_FILES = 10
-const MAX_TOTAL_BYTES = 4 * 1024 * 1024 // limite d'une requête sur Vercel (4,5 Mo)
-const ACCEPTED = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic']
 
 const str = (form: FormData, key: string, max = 500) => String(form.get(key) ?? '').trim().slice(0, max)
 const num = (form: FormData, key: string) => {
@@ -22,15 +19,6 @@ const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)
 const isPhone = (v: string) => v.replace(/\D/g, '').length >= 9
 
 const pick = <T extends string>(value: string, allowed: readonly T[]) => (allowed.includes(value as T) ? (value as T) : undefined)
-
-function readFiles(form: FormData, field: string): File[] | string {
-  const files = form.getAll(field).filter((f): f is File => f instanceof File && f.size > 0)
-  if (files.length > MAX_FILES) return `${MAX_FILES} fichiers maximum.`
-  if (files.reduce((s, f) => s + f.size, 0) > MAX_TOTAL_BYTES)
-    return 'Fichiers trop lourds (4 Mo au total). Gardez le reste : un conseiller vous indiquera comment nous l’envoyer.'
-  if (files.some((f) => !ACCEPTED.includes(f.type))) return 'Formats acceptés : PDF, JPG, PNG, HEIC.'
-  return files
-}
 
 /** PUB-03 / PUB-12 / PUB-13 : demande de financement, reprise, contact ou rappel. */
 export async function submitRequest(form: FormData): Promise<ActionResult> {
@@ -108,7 +96,7 @@ export async function submitRequest(form: FormData): Promise<ActionResult> {
           collection: 'documents',
           data: {
             request: request.id,
-            kind: type === 'tradein' ? 'tradein-photo' : (pick(kinds[i] ?? '', ['id', 'address', 'payslips', 'tax', 'rib', 'kbis', 'accounts', 'bank', 'other'] as const) ?? 'other'),
+            kind: type === 'tradein' ? 'tradein-photo' : (pick(kinds[i] ?? '', DOCUMENT_KINDS) ?? 'other'),
           },
           file: { data: Buffer.from(await file.arrayBuffer()), mimetype: file.type, name: file.name, size: file.size },
           overrideAccess: true,
