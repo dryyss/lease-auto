@@ -3,12 +3,50 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { DEV_COOKIE, devAuthAllowed } from '@/auth/devStrategy'
 import { auth0 } from '@/lib/auth0'
 
+// L'ancienne interface (Payload) est remplacée par la console « Gestion » : chaque écran renvoie à son équivalent.
+// Restent servis par Payload : l'API (/api), la connexion et la déconnexion.
+const COLLECTIONS: Record<string, string> = {
+  requests: '/gestion/demandes',
+  vehicles: '/gestion/vehicules',
+  appointments: '/gestion/rendez-vous',
+  reviews: '/gestion/avis',
+  users: '/gestion/equipe',
+  media: '/gestion/medias',
+  brands: '/gestion/marques',
+  models: '/gestion/marques',
+  documents: '/gestion/justificatifs',
+  subscribers: '/gestion/abonnes',
+  campaigns: '/gestion/newsletters',
+  faqs: '/gestion/contenus/faq',
+  articles: '/gestion/contenus/articles',
+  'local-pages': '/gestion/contenus/pages-locales',
+  redirects: '/gestion/redirections',
+}
+const GLOBALS: Record<string, string> = {
+  homepage: '/gestion/contenus/accueil',
+  agency: '/gestion/contenus/agence',
+  settings: '/gestion/reglages',
+  agenda: '/gestion/creneaux',
+}
+const AUTH_PAGES = ['/admin/login', '/admin/logout', '/admin/create-first-user']
+
+function consoleEquivalent(pathname: string): string {
+  const [, , kind, slug, id] = pathname.split('/') // '', 'admin', 'collections' | 'globals', slug, id
+  if (kind === 'globals' && GLOBALS[slug]) return GLOBALS[slug]
+  if (kind === 'collections' && COLLECTIONS[slug]) {
+    const base = COLLECTIONS[slug]
+    if (id === 'create') return base === '/gestion/vehicules' || base.startsWith('/gestion/contenus/') ? `${base}/nouveau` : base
+    // Seules les fiches qui existent dans la console gardent leur identifiant.
+    return id && /^\d+$/.test(id) && ['/gestion/demandes', '/gestion/vehicules', '/gestion/contenus/articles', '/gestion/contenus/pages-locales'].includes(base) ? `${base}/${id}` : base
+  }
+  return '/gestion'
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // L'accueil de l'ancienne admin (Payload) mène à la console « Gestion ». Payload reste pour les contenus et réglages.
-  if (pathname === '/admin' || pathname === '/admin/') {
-    return NextResponse.redirect(new URL('/gestion', request.url))
+  if (pathname.startsWith('/admin') && !AUTH_PAGES.includes(pathname)) {
+    return NextResponse.redirect(new URL(consoleEquivalent(pathname), request.url))
   }
 
   if (!auth0) {

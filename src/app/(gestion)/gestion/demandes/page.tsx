@@ -133,8 +133,8 @@ export default async function DemandesPage({ searchParams }: { searchParams: Pro
                 </Link>
               ))}
             </nav>
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- l'export CSV reste celui de l'ancienne interface : vrai lien */}
-            <a href="/admin/collections/requests" className={btn.ghost}>
+            {/* Fichier CSV (route /gestion/export/demandes) : vrai lien de téléchargement. */}
+            <a href={`/gestion/export/demandes?${new URLSearchParams((['q', 'statut', 'type', 'mes', 'pieces', 'retard'] as const).flatMap((k) => (sp[k] ? [[k, String(sp[k])]] : [])))}`} className={btn.ghost} download>
               <Download className="size-4" aria-hidden /> Exporter
             </a>
           </>

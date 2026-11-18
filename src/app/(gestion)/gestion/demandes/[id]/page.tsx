@@ -125,10 +125,6 @@ export default async function DemandePage({ params }: { params: Promise<{ id: st
           )}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
             <AssignSelect id={r.id} current={assignedId} members={members} />
-            {/* Vrai lien : l'ancienne interface (Payload) a sa propre mise en page. */}
-            <a href={`/admin/collections/requests/${r.id}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-2 hover:text-primary">
-              Ouvrir dans l’ancienne interface <ExternalLink className="size-3.5" aria-hidden />
-            </a>
           </div>
         </Card>
       </div>

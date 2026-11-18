@@ -39,11 +39,9 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
       subtitle="Essais, passages en agence et livraisons, à l’heure de Paris."
       actions={
         <>
-          {/* Réglage dans l'ancienne interface (Payload) : vrai lien. */}
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a href="/admin/globals/agenda" className={btn.ghost}>
+          <Link href="/gestion/creneaux" className={btn.ghost}>
             <Settings className="size-4" aria-hidden /> Régler les créneaux
-          </a>
+          </Link>
           <NewAppointment today={dayKey(today)} vehicles={vehicles.docs.map((v) => ({ id: v.id, title: v.title }))} />
         </>
       }
