@@ -85,18 +85,25 @@ export function ImagePicker({ value, onChange, label = 'Image', defaultAlt = '' 
       )}
 
       <Dialog open={open} onClose={() => setOpen(false)} title="Médiathèque" wide>
-        <form
-          className="mb-4 flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            void load()
-          }}
-        >
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher une image" className={field} aria-label="Rechercher une image" />
-          <button type="submit" className={`${btn.dark} shrink-0`}>
+        {/* Pas de <form> ici : le sélecteur est souvent placé dans le formulaire de la page (formulaire imbriqué interdit). */}
+        <div className="mb-4 flex gap-2" role="search">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                void load()
+              }
+            }}
+            placeholder="Rechercher une image"
+            className={field}
+            aria-label="Rechercher une image"
+          />
+          <button type="button" onClick={() => void load()} className={`${btn.dark} shrink-0`}>
             Rechercher
           </button>
-        </form>
+        </div>
         {busy && items.length === 0 ? (
           <p className="flex items-center gap-2 text-sm text-ink-2">
             <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
