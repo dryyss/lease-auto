@@ -22,3 +22,7 @@ export function refusalProblem(reason: unknown, note: unknown): string | null {
   if (reason === 'other' && !String(note ?? '').trim()) return 'Précisez le motif du refus.'
   return null
 }
+
+/** Motifs proposés selon le type : les motifs de crédit n'ont pas de sens pour un message, un rappel ou une reprise. */
+export const reasonsFor = (type: string) =>
+  type === 'financing' ? REFUSAL_REASONS : REFUSAL_REASONS.filter((r) => r.value === 'withdrawn' || r.value === 'unreachable' || r.value === 'other')

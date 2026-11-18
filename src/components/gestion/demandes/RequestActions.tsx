@@ -5,7 +5,7 @@ import { useId, useState } from 'react'
 
 import { advance, assign, refuse } from '@/app/(gestion)/gestion/demandes/actions'
 import { btn, field, label } from '@/components/gestion/ui'
-import { REFUSAL_REASONS } from '@/lib/refusal-reasons'
+import { reasonsFor } from '@/lib/refusal-reasons'
 import type { Request } from '@/payload-types'
 
 import { ErrorText, Modal, ModalFooter } from './Modal'
@@ -97,7 +97,7 @@ function RefuseButton({ id, financing }: { id: number; financing: boolean }) {
           <fieldset>
             <legend className={label}>Motif</legend>
             <div className="grid gap-1.5">
-              {REFUSAL_REASONS.map((r) => (
+              {reasonsFor(financing ? 'financing' : 'other').map((r) => (
                 <label key={r.value} className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line px-3 py-2 text-sm has-checked:border-primary has-checked:bg-soft">
                   <input type="radio" name="reason" value={r.value} checked={reason === r.value} onChange={() => setReason(r.value)} required className="accent-accent" />
                   {r.label}

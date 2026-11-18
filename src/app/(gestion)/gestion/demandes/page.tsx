@@ -150,7 +150,7 @@ export default async function DemandesPage({ searchParams }: { searchParams: Pro
             Rechercher une demande
           </label>
           <input id="demandes-q" name="q" type="search" defaultValue={sp.q} placeholder="Nom, e-mail, téléphone ou référence" className={field} />
-          <button type="submit" className={btn.dark}>
+          <button type="submit" className={`${btn.dark} shrink-0`}>
             <Search className="size-4" aria-hidden /> <span className="max-sm:sr-only">Rechercher</span>
           </button>
         </form>
