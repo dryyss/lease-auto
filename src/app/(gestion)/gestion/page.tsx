@@ -18,6 +18,9 @@ import {
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { AutoRefresh } from '@/components/gestion/AutoRefresh'
+import { hasMissingDocs, idOf } from '@/components/gestion/demandes/format'
+import { ROW_SELECT, type Row } from '@/components/gestion/demandes/RequestList'
 import { Badge, btn, Card, Empty, StatCard } from '@/components/gestion/ui'
 import { parisNow, parisTime } from '@/lib/agenda'
 import {
@@ -40,8 +43,11 @@ const H = 3_600_000
 const D = 24 * H
 const iso = (ms: number) => new Date(ms).toISOString()
 
+/** Les listes ne chargent que ce qu'elles affichent : titre du véhicule et nom du conseiller, pas les fiches entières. */
+const POPULATE = { vehicles: { title: true }, users: { name: true } } as const
+
 /** Ce que le client veut, en une ligne. */
-const what = (r: Request) =>
+const what = (r: Row) =>
   [
     REQUEST_TYPES[r.type],
     r.vehicle && typeof r.vehicle === 'object' ? r.vehicle.title : r.tradeIn?.brand ? `${r.tradeIn.brand} ${r.tradeIn.model ?? ''}` : null,
@@ -68,16 +74,25 @@ export default async function DashboardPage() {
   const working = { status: { in: ['review', 'approved'] } }
 
   const [
-    nNew, nReview, nApproved, nDeliveredMonth, nStale, nMissing, nOverdue,
+    nNew, nReview, nApproved, nDeliveredMonth, nStale, missing, nOverdue,
     carsOnline, carsReserved, carsDraft, carsNoPlate, todayAppts,
-    toTake, inProgress, recentDocs, period,
+    toTake, inProgress, openDocs, period,
   ] = await Promise.all([
     payload.count({ collection: 'requests', where: { status: { equals: 'new' } }, ...q }),
     payload.count({ collection: 'requests', where: { status: { equals: 'review' } }, ...q }),
     payload.count({ collection: 'requests', where: { and: [{ type: { equals: 'financing' } }, { status: { equals: 'approved' } }] }, ...q }),
     payload.count({ collection: 'requests', where: { and: [{ type: { equals: 'financing' } }, { status: { equals: 'delivered' } }, { deliveredAt: { greater_than_equal: iso(monthStart) } }] }, ...q }),
     payload.count({ collection: 'requests', where: { and: [{ status: { equals: 'new' } }, { createdAt: { less_than: iso(now - staleHours * H) } }] }, ...q }),
-    payload.count({ collection: 'requests', where: { and: [{ type: { equals: 'financing' } }, { missingDocuments: { equals: true } }, { status: { in: ['new', 'review'] } }] }, ...q }),
+    // Dossiers encore marqués incomplets (seuls les identifiants sont lus) : croisés plus bas avec les pièces déposées.
+    payload.find({
+      collection: 'requests',
+      where: { and: [{ type: { equals: 'financing' } }, { missingDocuments: { equals: true } }, { status: { in: ['new', 'review'] } }] },
+      limit: 1000,
+      pagination: false,
+      depth: 0,
+      ...q,
+      select: { type: true },
+    }),
     payload.count({ collection: 'appointments', where: { and: [{ status: { equals: 'confirmed' } }, { startsAt: { less_than: iso(dayStart) } }] }, ...q }),
     payload.count({ collection: 'vehicles', where: { and: [{ _status: { equals: 'published' } }, { status: { equals: 'available' } }] }, ...q }),
     payload.count({ collection: 'vehicles', where: { status: { equals: 'reserved' } }, ...q }),
@@ -90,10 +105,13 @@ export default async function DashboardPage() {
       limit: 12,
       depth: 1,
       ...q,
+      select: { name: true, phone: true, kind: true, startsAt: true, vehicle: true },
+      populate: POPULATE,
     }),
-    payload.find({ collection: 'requests', where: { status: { equals: 'new' } }, sort: 'createdAt', limit: 5, depth: 1, ...q }),
-    payload.find({ collection: 'requests', where: admin ? working : { and: [working, mine] }, sort: '-updatedAt', limit: 5, depth: 1, ...q }),
-    payload.find({ collection: 'documents', where: { createdAt: { greater_than_equal: iso(now - 3 * D) } }, sort: '-createdAt', limit: 50, depth: 0, ...q, select: { request: true } }),
+    payload.find({ collection: 'requests', where: { status: { equals: 'new' } }, sort: 'createdAt', limit: 5, depth: 1, ...q, select: ROW_SELECT, populate: POPULATE }),
+    payload.find({ collection: 'requests', where: admin ? working : { and: [working, mine] }, sort: '-updatedAt', limit: 5, depth: 1, ...q, select: ROW_SELECT, populate: POPULATE }),
+    // Pièces déposées sur les demandes encore ouvertes : « 2 pièces à vérifier » sur la ligne, tant que le dossier n'est pas marqué complet.
+    payload.find({ collection: 'documents', where: { 'request.status': { in: ['new', 'review', 'approved'] } }, limit: 5000, pagination: false, depth: 0, ...q, select: { request: true } }),
     payload.find({
       collection: 'requests',
       where: { createdAt: { greater_than_equal: iso(sixMonthsStart) } },
@@ -135,8 +153,14 @@ export default async function DashboardPage() {
   }))
   const typeMax = Math.max(1, ...byType.map((b) => b.n))
 
-  /* Pièces déposées ces 3 derniers jours, par dossier. */
-  const docRequests = [...new Set(recentDocs.docs.map((d) => (typeof d.request === 'object' ? d.request?.id : d.request)).filter(Boolean))] as number[]
+  /* Pièces reçues par demande. Un dossier encore marqué incomplet qui en a reçu attend une vérification de l'équipe. */
+  const received = new Map<number, number>()
+  for (const d of openDocs.docs) {
+    const id = idOf(d.request)
+    if (id) received.set(id, (received.get(id) ?? 0) + 1)
+  }
+  const docRequests = missing.docs.filter((r) => received.has(r.id)).map((r) => r.id)
+  const waitingDocs = missing.docs.length - docRequests.length
 
   const todo: { tone: 'red' | 'amber' | 'navy'; icon: LucideIcon; n: number; title: string; text: string; href: string }[] = [
     { tone: 'red' as const, icon: Clock, n: nStale.totalDocs, title: `${plural(nStale.totalDocs, 'demande')} sans réponse depuis plus de ${staleHours} h`, text: 'Le client attend un premier appel.', href: '/gestion/demandes?retard=1' },
@@ -144,11 +168,11 @@ export default async function DashboardPage() {
       tone: 'navy' as const,
       icon: ScanSearch,
       n: docRequests.length,
-      title: `${plural(docRequests.length, 'dossier')} avec de nouvelles pièces`,
-      text: 'Déposées ces 3 derniers jours : à vérifier.',
-      href: docRequests.length === 1 ? `/gestion/demandes/${docRequests[0]}` : '/gestion/demandes?tri=recent',
+      title: `${plural(docRequests.length, 'dossier')} avec des pièces à vérifier`,
+      text: 'Le client a déposé des justificatifs. Vérifiez-les, puis marquez le dossier complet.',
+      href: docRequests.length === 1 ? `/gestion/demandes/${docRequests[0]}` : '/gestion/demandes?pieces=1',
     },
-    { tone: 'amber' as const, icon: FileWarning, n: nMissing.totalDocs, title: plural(nMissing.totalDocs, 'dossier incomplet', 'dossiers incomplets'), text: 'Pièces attendues. Relances automatiques à 48 h et 5 jours.', href: '/gestion/demandes?pieces=1' },
+    { tone: 'amber' as const, icon: FileWarning, n: waitingDocs, title: `${plural(waitingDocs, 'dossier')} sans justificatifs`, text: 'Aucune pièce reçue. Le client est relancé automatiquement à 48 h et 5 jours.', href: '/gestion/demandes?pieces=1' },
     { tone: 'red' as const, icon: CalendarDays, n: nOverdue.totalDocs, title: `${plural(nOverdue.totalDocs, 'rendez-vous passé', 'rendez-vous passés')} à clôturer`, text: 'Indiquez s’ils ont été honorés ou non.', href: '/gestion/rendez-vous?vue=liste&filtre=a-cloturer' },
     { tone: 'amber' as const, icon: CarFront, n: carsNoPlate.totalDocs, title: `${plural(carsNoPlate.totalDocs, 'véhicule')} sans immatriculation`, text: 'À compléter pour retrouver chaque voiture facilement.', href: '/gestion/vehicules?filtre=a-completer' },
   ].filter((t) => t.n > 0)
@@ -167,8 +191,10 @@ export default async function DashboardPage() {
             {greeting}
             {firstName ? ` ${firstName}` : ''}
           </h1>
-          <p className="mt-1 text-sm text-ink-2">
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-ink-2">
             {todo.length ? `${plural(todo.length, 'point')} à traiter aujourd’hui.` : 'Rien d’urgent : tout est à jour.'}
+            {/* Le tableau de bord se recharge seul chaque minute tant qu'on le regarde : une demande ou une pièce déposée apparaît sans F5. */}
+            <AutoRefresh at={fmtTime(iso(now))} />
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -228,7 +254,7 @@ export default async function DashboardPage() {
             {toTake.docs.length === 0 ? (
               <Empty icon={CheckCircle2} title="Aucune nouvelle demande" text="Toutes les demandes ont été prises en charge." />
             ) : (
-              <RequestList requests={toTake.docs} staleBefore={now - staleHours * H} />
+              <RequestList requests={toTake.docs} received={received} staleBefore={now - staleHours * H} />
             )}
           </Card>
 
@@ -245,7 +271,7 @@ export default async function DashboardPage() {
             {inProgress.docs.length === 0 ? (
               <Empty icon={FolderOpen} title="Aucun dossier en cours" text={admin ? 'Aucun dossier en étude ou accordé.' : 'Prenez une demande ci-dessus pour commencer.'} />
             ) : (
-              <RequestList requests={inProgress.docs} showStatus />
+              <RequestList requests={inProgress.docs} received={received} showStatus />
             )}
           </Card>
 
@@ -354,12 +380,13 @@ export default async function DashboardPage() {
   )
 }
 
-function RequestList({ requests, staleBefore, showStatus = false }: { requests: Request[]; staleBefore?: number; showStatus?: boolean }) {
+function RequestList({ requests, received, staleBefore, showStatus = false }: { requests: Row[]; received: Map<number, number>; staleBefore?: number; showStatus?: boolean }) {
   return (
     <ul className="divide-y divide-line">
       {requests.map((r) => {
         const late = staleBefore != null && new Date(r.createdAt).getTime() < staleBefore
         const owner = r.assignedTo && typeof r.assignedTo === 'object' ? r.assignedTo.name : null
+        const files = received.get(r.id) ?? 0
         return (
           <li key={r.id} className="flex items-center gap-3 px-5 py-3.5 transition hover:bg-soft">
             <Link href={`/gestion/demandes/${r.id}`} className="min-w-0 flex-1">
@@ -369,7 +396,13 @@ function RequestList({ requests, staleBefore, showStatus = false }: { requests: 
                 </strong>
                 {showStatus && <Badge className={REQUEST_STATUS_TONE[r.status]}>{requestStatusLabel(r)}</Badge>}
                 {late && <Badge className="bg-accent text-white">En retard</Badge>}
-                {r.type === 'financing' && r.missingDocuments && <Badge className="bg-amber-100 text-amber-800">Pièces manquantes</Badge>}
+                {/* Dossier à l'étude encore incomplet : soit rien n'est arrivé, soit des pièces attendent d'être vérifiées. */}
+                {hasMissingDocs(r) &&
+                  (files > 0 ? (
+                    <Badge className="bg-primary/10 text-primary">{plural(files, 'pièce')} à vérifier</Badge>
+                  ) : (
+                    <Badge className="bg-amber-100 text-amber-800">Pièces manquantes</Badge>
+                  ))}
               </span>
               <span className="mt-0.5 block truncate text-sm text-ink-2">{what(r)}</span>
               <span className="mt-0.5 block text-xs text-ink-3">

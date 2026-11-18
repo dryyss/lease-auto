@@ -1,6 +1,7 @@
 // Données d'EXEMPLE côté clients, pour présenter l'administration au client Lease Auto.
 // Usage : pnpm seed:exemples            → crée les exemples (ne fait rien s'ils existent déjà)
-//         pnpm seed:exemples --supprimer → supprime tous les exemples (à faire avant la mise en ligne)
+//         pnpm seed:exemples supprimer → supprime tous les exemples (à faire avant la mise en ligne)
+//         (sans tirets : `payload run` ne transmet pas les options en « -- » au script)
 //
 // Tout est reconnaissable : demandes d'origine « exemple », e-mails en @example.com (domaine réservé, rien n'est délivré),
 // newsletter préfixée « [Exemple] ». Aucun e-mail n'est envoyé : les crochets d'envoi sont coupés (skipEmails),
@@ -17,7 +18,7 @@ const ctx = { skipEmails: true, skipAlerts: true, skipSend: true }
 const SOURCE = 'exemple'
 const DOMAIN = '@example.com'
 
-if (process.argv.includes('--supprimer')) {
+if (process.argv.some((a) => a.replace(/^--/, '') === 'supprimer')) {
   const del = async (collection: 'requests' | 'appointments' | 'subscribers' | 'campaigns', where: object) => {
     const { docs } = await payload.delete({ collection, where: where as never, overrideAccess: true, context: ctx })
     console.log(`${collection} : ${docs.length} supprimé(s)`)
@@ -114,9 +115,15 @@ if (!demoExists.totalDocs) {
   console.log(`Acheteur de démonstration créé : ${DEMO_CUSTOMER.reference} / ${DEMO_CUSTOMER.email}`)
 }
 
-const already = await payload.count({ collection: 'requests', where: { source: { equals: SOURCE } }, overrideAccess: true })
+// Les deux demandes de l'acheteur de démonstration (créées juste au-dessus) ne comptent pas : sinon, sur une base neuve,
+// elles feraient croire que les exemples existent déjà et rien d'autre ne serait créé.
+const already = await payload.count({
+  collection: 'requests',
+  where: { and: [{ source: { equals: SOURCE } }, { reference: { not_in: [DEMO_CUSTOMER.reference, 'LA-DEMO-REPRISE'] } }] },
+  overrideAccess: true,
+})
 if (already.totalDocs > 0) {
-  console.log(`Exemples déjà présents (${already.totalDocs} demandes). Rien n'est créé. Pour repartir de zéro : --supprimer.`)
+  console.log(`Exemples déjà présents (${already.totalDocs} demandes). Rien n'est créé. Pour repartir de zéro : pnpm seed:exemples supprimer.`)
   process.exit(0)
 }
 
@@ -157,8 +164,8 @@ const people: Ex[] = [
   { type: 'financing', status: 'delivered', firstName: 'Paul', lastName: 'Girard', formula: 'credit', months: 60, deposit: 6000, profile: 'retraite', ageH: 25 * 24, replyH: 5 },
   { type: 'financing', status: 'delivered', firstName: 'Aïcha', lastName: 'Benali', formula: 'loa', months: 37, deposit: 2500, profile: 'cdd', ageH: 12 * 24, replyH: 1 },
   { type: 'contact', status: 'delivered', firstName: 'Marc', lastName: 'Lefèvre', message: 'Question sur la garantie.', ageH: 9 * 24, replyH: 3 },
-  { type: 'financing', status: 'refused', firstName: 'Kevin', lastName: 'Roux', formula: 'credit', months: 72, deposit: 0, profile: 'cdd', monthlyIncome: 1400, monthlyBudget: 350, ageH: 14 * 24, replyH: 8 },
-  { type: 'callback', status: 'refused', firstName: 'Inès', lastName: 'Bernard', ageH: 20 * 24, replyH: 2 },
+  { type: 'financing', status: 'refused', firstName: 'Kevin', lastName: 'Roux', formula: 'credit', months: 72, deposit: 0, profile: 'cdd', monthlyIncome: 1400, monthlyBudget: 350, refusalReason: 'income', ageH: 14 * 24, replyH: 8 },
+  { type: 'callback', status: 'refused', firstName: 'Inès', lastName: 'Bernard', refusalReason: 'unreachable', ageH: 20 * 24, replyH: 2 },
 ]
 
 const phone = (i: number) => `06 ${String(10 + i).padStart(2, '0')} ${String(20 + i * 3).padStart(2, '0')} ${String(30 + i * 2).padStart(2, '0')} ${String(40 + i).padStart(2, '0')}`

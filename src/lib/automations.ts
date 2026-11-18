@@ -36,12 +36,18 @@ export async function runAutomations(payload: Payload) {
       limit: 100,
       depth: 0,
     })
+    let sent = 0
     for (const r of docs) {
       if ((r.remindersSent ?? 0) !== attempt - 1) continue
+      // Le client a déjà déposé des pièces (formulaire ou « Mon espace ») : c'est à l'équipe de les vérifier
+      // (tableau de bord, « pièces à vérifier »). Lui écrire « il manque des pièces » serait faux.
+      const received = await payload.count({ collection: 'documents', where: { request: { equals: r.id } } })
+      if (received.totalDocs) continue
       await remindMissingDocuments(payload, r, attempt)
       await payload.update({ collection: 'requests', id: r.id, data: { remindersSent: attempt }, context: ctx })
+      sent++
     }
-    report[`relance_dossier_${attempt}`] = docs.length
+    report[`relance_dossier_${attempt}`] = sent
   }
 
   // AUTO-02 : demandes restées « nouvelles » au-delà du délai, rappel groupé une fois par demande.

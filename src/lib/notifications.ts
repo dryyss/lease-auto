@@ -23,6 +23,9 @@ const STATUS_TEXT: Record<Request['status'], { title: string; text: string }> = 
 
 const getSettings = (payload: Payload) => payload.findGlobal({ slug: 'settings', depth: 0 })
 
+/** Espace acheteur, référence déjà remplie : il ne reste au client qu'à saisir son e-mail. */
+const spaceUrl = (r: Request) => `${siteUrl()}/mon-espace${r.reference ? `?ref=${encodeURIComponent(r.reference)}` : ''}`
+
 const vehicleOf = async (payload: Payload, v: Request['vehicle'] | Appointment['vehicle']) => {
   if (!v) return null
   if (typeof v === 'object') return v
@@ -61,9 +64,9 @@ export async function notifyNewRequest(payload: Payload, r: Request, documentsCo
         { type: 'p', text: 'Voici le récapitulatif de votre demande. Un conseiller Lease Auto vous répond sous 48 h ouvrées.' },
         rows,
         ...(missingDocs
-          ? [{ type: 'p' as const, text: 'Pour accélérer l’étude, pensez à nous transmettre vos justificatifs en répondant à cet e-mail ou depuis le lien ci-dessous.' }]
-          : []),
-        { type: 'button', label: 'Voir nos véhicules', href: `${siteUrl()}/vehicules` },
+          ? [{ type: 'p' as const, text: 'Votre dossier est étudié une fois vos justificatifs reçus : déposez-les depuis votre espace (bouton ci-dessous) ou en répondant à cet e-mail.' }]
+          : [{ type: 'p' as const, text: 'Suivez l’avancement de votre demande depuis votre espace : votre référence et votre e-mail suffisent.' }]),
+        { type: 'button', label: missingDocs ? 'Déposer mes justificatifs' : 'Suivre ma demande', href: spaceUrl(r) },
       ],
     }),
   })
@@ -79,7 +82,7 @@ export async function notifyNewRequest(payload: Payload, r: Request, documentsCo
         { type: 'rows', rows: [['Téléphone', r.phone], ['E-mail', r.email], ['Code postal', r.postalCode], ['Justificatifs joints', documentsCount]] },
         rows,
         ...(r.message ? [{ type: 'p' as const, text: `Message : ${r.message}` }] : []),
-        { type: 'button', label: 'Ouvrir dans l’administration', href: `${siteUrl()}/admin/collections/requests/${r.id}` },
+        { type: 'button', label: 'Ouvrir la demande', href: `${siteUrl()}/gestion/demandes/${r.id}` },
       ],
     }),
   })
@@ -99,6 +102,8 @@ export async function notifyStatusChange(payload: Payload, r: Request) {
         { type: 'p', text: `Bonjour ${r.firstName},` },
         { type: 'p', text: s.text },
         await requestRows(payload, r),
+        // Dossier clos (refus, livraison) : plus rien à suivre ni à déposer, pas de bouton.
+        ...(r.status === 'review' || r.status === 'approved' ? [{ type: 'button' as const, label: 'Suivre mon dossier', href: spaceUrl(r) }] : []),
         { type: 'p', text: `Une question ? Appelez-nous au ${settings.company?.phone ?? ''} en indiquant la référence ${r.reference}.` },
       ],
     }),
@@ -120,10 +125,43 @@ export async function remindMissingDocuments(payload: Payload, r: Request, attem
           type: 'p',
           text: 'Pour que nos partenaires puissent étudier votre financement, il nous manque encore des justificatifs : pièce d’identité, justificatif de domicile, 3 derniers bulletins de salaire, dernier avis d’imposition et RIB.',
         },
-        { type: 'p', text: 'Répondez simplement à cet e-mail avec vos documents (PDF ou photos lisibles), ou envoyez-les sur WhatsApp.' },
+        { type: 'p', text: 'Déposez-les depuis votre espace (PDF ou photos lisibles) : votre référence et votre e-mail suffisent pour l’ouvrir. Vous pouvez aussi répondre à cet e-mail avec vos documents, ou les envoyer sur WhatsApp.' },
+        { type: 'button', label: 'Déposer mes justificatifs', href: spaceUrl(r) },
       ],
     }),
     replyTo: settings.company?.email ?? undefined,
+  })
+}
+
+/**
+ * Le client a déposé des pièces depuis son espace : le conseiller du dossier et l'équipe sont prévenus.
+ * Un seul e-mail par séance de dépôt (le client envoie ses pièces une par une), pas un par fichier.
+ */
+export async function notifyDocumentsReceived(payload: Payload, r: Request, count: number, kindLabel: string) {
+  const recent = await payload.count({
+    collection: 'documents',
+    where: { and: [{ request: { equals: r.id } }, { createdAt: { greater_than: new Date(Date.now() - 30 * 60_000).toISOString() } }] },
+    overrideAccess: true,
+  })
+  if (recent.totalDocs > count) return false
+
+  const settings = await getSettings(payload)
+  const advisorId = r.assignedTo && typeof r.assignedTo === 'object' ? r.assignedTo.id : r.assignedTo
+  const advisor = advisorId ? await payload.findByID({ collection: 'users', id: advisorId, depth: 0, overrideAccess: true }).catch(() => null) : null
+  const to = [...new Set([...(advisor?.email && !advisor.disabled ? [advisor.email] : []), ...internalRecipients(settings)])]
+  return sendEmail(payload, {
+    to,
+    replyTo: r.email,
+    subject: `[Pièces reçues] ${r.firstName} ${r.lastName} · ${r.reference}`,
+    html: renderEmail({
+      settings,
+      title: `${r.firstName} ${r.lastName} a déposé des justificatifs`,
+      blocks: [
+        { type: 'rows', rows: [['Référence', r.reference], ['Première pièce reçue', kindLabel], ['Téléphone', r.phone], ['Suivi par', advisor?.name]] },
+        { type: 'p', text: 'Le client dépose ses pièces depuis son espace : d’autres peuvent suivre. Vérifiez-les, puis marquez le dossier complet sur la fiche de la demande.' },
+        { type: 'button', label: 'Ouvrir le dossier', href: `${siteUrl()}/gestion/demandes/${r.id}` },
+      ],
+    }),
   })
 }
 
@@ -139,7 +177,7 @@ export async function remindTeam(payload: Payload, pending: Request[]) {
       title: 'Demandes à traiter',
       blocks: [
         { type: 'rows', rows: pending.map((r) => [`${r.reference} · ${REQUEST_TYPES[r.type]}`, `${r.firstName} ${r.lastName} · ${r.phone}`]) },
-        { type: 'button', label: 'Ouvrir les demandes', href: `${siteUrl()}/admin/collections/requests?where[status][equals]=new` },
+        { type: 'button', label: 'Ouvrir les demandes', href: `${siteUrl()}/gestion/demandes?statut=new` },
       ],
     }),
   })

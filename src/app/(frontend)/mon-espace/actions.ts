@@ -8,6 +8,7 @@ import { demoAccessAllowed } from '@/auth/devStrategy'
 import { closeCustomerSession, customerEmail, openCustomerSession } from '@/lib/customer-session'
 import { DOCUMENT_KINDS, readFiles } from '@/lib/uploads'
 import { DEMO_CUSTOMER } from '@/lib/demo-customer'
+import { notifyDocumentsReceived } from '@/lib/notifications'
 import { payloadClient } from '@/lib/payload'
 import { checkSpam } from '@/lib/spam'
 
@@ -89,7 +90,10 @@ export async function addCustomerDocuments(form: FormData): Promise<ActionResult
       ],
     },
   })
+  // « Votre conseiller est prévenu » : e-mail au conseiller du dossier et à l'équipe (un seul par séance de dépôt).
+  await notifyDocumentsReceived(payload, request, saved, DOCUMENT_LABELS[kind] ?? 'autre')
   revalidatePath('/mon-espace')
+  revalidatePath('/gestion')
   return { ok: true, message: `${saved} fichier(s) reçu(s). Votre conseiller les vérifie.` }
 }
 
