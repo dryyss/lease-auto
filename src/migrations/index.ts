@@ -3,6 +3,7 @@ import * as migration_20261116_190000_reviews_social from './20261116_190000_rev
 import * as migration_20261116_220000_requests_refusal from './20261116_220000_requests_refusal';
 import * as migration_20261116_230000_vehicles_plate from './20261116_230000_vehicles_plate';
 import * as migration_20261118_100000_stored_files from './20261118_100000_stored_files';
+import * as migration_20261118_110000_files_object_key from './20261118_110000_files_object_key';
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20261118_100000_stored_files.up,
     down: migration_20261118_100000_stored_files.down,
     name: '20261118_100000_stored_files'
+  },
+  {
+    up: migration_20261118_110000_files_object_key.up,
+    down: migration_20261118_110000_files_object_key.down,
+    name: '20261118_110000_files_object_key'
   },
 ];
