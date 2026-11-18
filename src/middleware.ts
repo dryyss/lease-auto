@@ -6,6 +6,11 @@ import { auth0 } from '@/lib/auth0'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // L'accueil de l'ancienne admin (Payload) mène à la console « Gestion ». Payload reste pour les contenus et réglages.
+  if (pathname === '/admin' || pathname === '/admin/') {
+    return NextResponse.redirect(new URL('/gestion', request.url))
+  }
+
   if (!auth0) {
     if (devAuthAllowed() && (pathname === '/admin/login' || pathname === '/admin/create-first-user')) {
       return NextResponse.redirect(new URL('/dev/acces', request.url))
@@ -28,7 +33,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/acces-refuse', request.url))
     }
     const url = new URL('/auth/login', request.url)
-    url.searchParams.set('returnTo', request.nextUrl.searchParams.get('redirect') || '/admin')
+    const back = request.nextUrl.searchParams.get('redirect')
+    url.searchParams.set('returnTo', back && back !== '/admin' ? back : '/gestion')
     return NextResponse.redirect(url)
   }
   if (pathname === '/admin/logout') {
@@ -43,7 +49,7 @@ export async function middleware(request: NextRequest) {
   // Pas de session : direction Auth0 tout de suite, côté serveur. Sinon Payload charge l'admin puis redirige
   // côté navigateur, et cette navigation interne échoue sur Auth0 (autre domaine) avant de se rattraper.
   // Le cookie de démo (signé) est vérifié par Payload : on le laisse passer.
-  if (pathname.startsWith('/admin') && !request.cookies.has(DEV_COOKIE) && !(await auth0.getSession(request))) {
+  if ((pathname.startsWith('/admin') || pathname.startsWith('/gestion')) && !request.cookies.has(DEV_COOKIE) && !(await auth0.getSession(request))) {
     const url = new URL('/auth/login', request.url)
     url.searchParams.set('returnTo', pathname + request.nextUrl.search)
     return NextResponse.redirect(url)
@@ -54,5 +60,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/auth/:path*', '/admin/:path*'],
+  matcher: ['/auth/:path*', '/admin/:path*', '/gestion/:path*', '/gestion'],
 }

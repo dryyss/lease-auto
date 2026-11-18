@@ -75,7 +75,7 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
             <div className="card space-y-2 p-6 text-sm text-ink-2">
               <p className="font-black text-primary">Vous êtes de l’équipe Lease Auto ?</p>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /admin redirige vers Auth0 (autre domaine) */}
-              <a href="/admin" className="font-bold text-accent hover:underline">
+              <a href="/gestion" className="font-bold text-accent hover:underline">
                 Accéder à l’administration
               </a>
             </div>

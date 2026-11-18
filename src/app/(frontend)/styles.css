@@ -2,6 +2,7 @@
 
 @source "../../components/**/*.{ts,tsx}";
 @source "./**/*.{ts,tsx}";
+@source "../(gestion)/**/*.{ts,tsx}";
 
 /* ═══════════════════════════════════════════════════════════════════
    CHARTE LEASE AUTO — couleurs relevées sur le logo (novembre 2026)

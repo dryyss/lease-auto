@@ -7,7 +7,7 @@ const configured = Boolean(process.env.AUTH0_DOMAIN && process.env.AUTH0_CLIENT_
 // Routes montées par le middleware : /auth/login, /auth/logout, /auth/callback.
 export const auth0 = configured
   ? new Auth0Client({
-      signInReturnToPath: '/admin',
+      signInReturnToPath: '/gestion',
       authorizationParameters: { scope: 'openid profile email' },
     })
   : null
