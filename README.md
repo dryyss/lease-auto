@@ -35,11 +35,13 @@ Configuration Auth0 (Applications → *Regular Web Application*) :
 
 | Réglage | Valeurs |
 |---|---|
-| Allowed Callback URLs | `http://localhost:3000/auth/callback, https://www.lease-auto.fr/auth/callback` |
-| Allowed Logout URLs | `http://localhost:3000, https://www.lease-auto.fr` |
-| Allowed Web Origins | `http://localhost:3000, https://www.lease-auto.fr` |
+| Allowed Callback URLs | `http://localhost:3000/auth/callback, https://lease-auto.vercel.app/auth/callback, https://www.lease-auto.fr/auth/callback, https://lease-auto.fr/auth/callback` |
+| Allowed Logout URLs | `http://localhost:3000, https://lease-auto.vercel.app, https://www.lease-auto.fr, https://lease-auto.fr` |
+| Allowed Web Origins | `http://localhost:3000, https://lease-auto.vercel.app, https://www.lease-auto.fr, https://lease-auto.fr` |
 
 Désactiver l'inscription publique (Authentication → Database → *Disable Sign Ups*) : les comptes sont créés sur invitation.
+
+**Passage au vrai domaine :** le code accepte déjà `lease-auto.vercel.app`, `www.lease-auto.fr` et `lease-auto.fr` (`src/lib/auth0.ts`) : la connexion revient toujours sur le domaine d'où elle part. Il suffit que ces adresses figurent dans Auth0 (tableau ci-dessus). Au branchement du domaine, passer `NEXT_PUBLIC_SERVER_URL` et `APP_BASE_URL` à `https://www.lease-auto.fr` sur Vercel, puis redéployer. L'ancienne adresse `vercel.app` continue de fonctionner.
 
 Le SDK est `@auth0/nextjs-auth0` v4. Les routes sont `/auth/*`, pas `/api/auth/*` comme sur Finarent (v3).
 

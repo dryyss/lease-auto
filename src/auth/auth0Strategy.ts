@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import type { AuthStrategy } from 'payload'
 
-import { auth0 } from '@/lib/auth0'
+import { auth0, authBaseUrls } from '@/lib/auth0'
 
 /**
  * Connexion à l'administration via Auth0.
@@ -16,7 +16,7 @@ export const auth0Strategy: AuthStrategy = {
     if (!auth0 || !headers.get('cookie')) return { user: null }
 
     const session = await auth0.getSession(
-      new NextRequest(process.env.APP_BASE_URL || 'http://localhost:3000', { headers }),
+      new NextRequest(authBaseUrls[0] || 'http://localhost:3000', { headers }),
     )
     if (!session) return { user: null }
     const email = session.user.email?.toLowerCase()
