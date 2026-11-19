@@ -101,6 +101,20 @@ const isUrl = (v: string) => /^https?:\/\/[^\s]+\.[^\s]+$/i.test(v)
 
 const SOCIAL_HOME = { facebook: 'https://www.facebook.com/', instagram: 'https://www.instagram.com/', tiktok: 'https://www.tiktok.com/@' } as const
 
+const SOCIAL_NAMES = { facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' } as const
+const SOCIAL_HOSTS = { facebook: ['facebook.com', 'fb.com', 'fb.me'], instagram: ['instagram.com', 'instagr.am'], tiktok: ['tiktok.com'] } as const
+
+/** Lien complet vers le bon réseau (pas un e-mail, pas un autre site). */
+function socialUrlValid(k: keyof typeof SOCIAL_HOME, url: string): boolean {
+  if (!isUrl(url)) return false
+  try {
+    const u = new URL(url)
+    return !u.username && SOCIAL_HOSTS[k].some((h) => u.hostname === h || u.hostname.endsWith(`.${h}`))
+  } catch {
+    return false
+  }
+}
+
 /**
  * Lien de réseau social tel qu'on le colle : « @lease_auto », « instagram.com/lease_auto » ou le lien de partage complet.
  * Rend le lien complet, sans les paramètres de suivi ajoutés par les applications (?igsh=…, ?_r=1&_t=…).
@@ -165,7 +179,7 @@ export function validateSettings(v: SettingsInput): FieldErrors {
 
   for (const k of ['facebook', 'instagram', 'tiktok'] as const) {
     const url = normalizeSocial(k, v.social[k])
-    if (url && !isUrl(url)) e[`social.${k}`] = 'Collez le lien de la page (ex. https://www.instagram.com/lease_auto) ou le nom du compte (ex. @lease_auto).'
+    if (url && !socialUrlValid(k, url)) e[`social.${k}`] = `Collez le lien de la page ${SOCIAL_NAMES[k]} (ex. ${SOCIAL_HOME[k]}lease_auto) ou le nom du compte (ex. @lease_auto).`
   }
 
   for (const k of FORMULA_KEYS) {

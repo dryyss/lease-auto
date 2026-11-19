@@ -773,6 +773,11 @@ function EquipmentEditor({ items, onChange }: { items: string[]; onChange: (item
           value={draft}
           placeholder="Ex. Caméra de recul"
           onChange={(e) => setDraft(e.target.value)}
+          // En quittant le champ (ex. clic sur « Enregistrer » sans avoir cliqué « Ajouter ») : l'équipement tapé n'est pas perdu.
+          onBlur={() => {
+            if (draft.trim()) addMany([draft.trim()])
+            setDraft('')
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()

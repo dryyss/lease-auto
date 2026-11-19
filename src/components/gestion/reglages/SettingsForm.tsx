@@ -46,6 +46,8 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
   const [pending, setPending] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [toast, setToast] = useToast()
+  // Adresse tapée dans « Nouvelle adresse » sans cliquer sur « Ajouter » : prise en compte à l'enregistrement.
+  const [emailDraft, setEmailDraft] = useState('')
   useLeaveWarning(dirty)
 
   /** Modifie l'état et efface l'erreur du champ touché. */
@@ -65,8 +67,15 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
+    const draft = emailDraft.trim().toLowerCase()
+    let notificationEmails = v.company.notificationEmails
+    if (draft) {
+      if (!isEmail(draft)) return showErrors({ 'company.notificationEmails': `« ${draft} » n’est pas une adresse e-mail valable : corrigez-la ou effacez-la.` }, 'À corriger : e-mails des notifications.')
+      if (!notificationEmails.some((m) => m.trim().toLowerCase() === draft)) notificationEmails = [...notificationEmails, draft]
+    }
     const input: SettingsInput = {
       ...v,
+      company: { ...v.company, notificationEmails },
       legal: {
         legalNotice: legal.legalNotice === savedLegal.legalNotice ? null : legal.legalNotice,
         privacyPolicy: legal.privacyPolicy === savedLegal.privacyPolicy ? null : legal.privacyPolicy,
@@ -81,6 +90,8 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
     setPending(false)
     if (!r.ok) return showErrors(r.fields ?? {}, r.error)
     setErrors({})
+    setV((x) => ({ ...x, company: { ...x.company, notificationEmails } }))
+    setEmailDraft('')
     setDirty(false)
     setSavedLegal(legal)
     setToast('Réglages enregistrés : le site est à jour.')
@@ -148,6 +159,12 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
             <div className="mt-6">
               <EmailList
                 emails={v.company.notificationEmails}
+                draft={emailDraft}
+                onDraft={(d) => {
+                  setEmailDraft(d)
+                  setDirty(true)
+                  if (errors['company.notificationEmails']) setErrors(({ 'company.notificationEmails': _, ...rest }) => rest)
+                }}
                 error={errors['company.notificationEmails']}
                 onChange={(list) => up('company.notificationEmails', (x) => ({ ...x, company: { ...x.company, notificationEmails: list } }))}
               />
@@ -379,8 +396,7 @@ function Section({ id, children }: { id: string; children: ReactNode }) {
 }
 
 /** Liste d'e-mails qui reçoivent les notifications internes. */
-function EmailList({ emails, error, onChange }: { emails: string[]; error?: string; onChange: (list: string[]) => void }) {
-  const [draft, setDraft] = useState('')
+function EmailList({ emails, draft, onDraft: setDraft, error, onChange }: { emails: string[]; draft: string; onDraft: (d: string) => void; error?: string; onChange: (list: string[]) => void }) {
   const [draftError, setDraftError] = useState('')
   const id = fid('company.notificationEmails')
 
