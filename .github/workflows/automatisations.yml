@@ -1,11 +1,12 @@
 name: Automatisations
+# Les automatisations (rappels de rendez-vous, relances, demandes d'avis…) tournent chaque matin
+# grâce au cron Vercel (vercel.json → /api/cron). Ce workflow ne sert plus qu'à les lancer à la main.
+# Pour un passage toutes les heures : renseigner la variable SITE_URL et le secret CRON_SECRET du dépôt,
+# puis remettre ici « schedule: - cron: '0 * * * *' ».
 on:
-  schedule:
-    - cron: '0 * * * *'
   workflow_dispatch:
 jobs:
   cron:
-    # Ne tourne pas tant que l'URL du site n'est pas renseignée (pas d'échec en boucle avant la mise en ligne)
     if: vars.SITE_URL != ''
     runs-on: ubuntu-latest
     timeout-minutes: 6
