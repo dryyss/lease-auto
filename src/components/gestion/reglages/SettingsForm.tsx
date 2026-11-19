@@ -208,18 +208,22 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
                   <F key={k} id={fid(key)} text={{ facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' }[k]} error={errors[key]}>
                     <input
                       {...errAria(fid(key), errors[key])}
-                      type="url"
+                      type="text"
                       inputMode="url"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       className={field}
                       value={v.social[k]}
-                      placeholder={`https://www.${k}.com/…`}
+                      placeholder={k === 'facebook' ? 'https://www.facebook.com/…' : '@lease_auto ou le lien'}
                       onChange={(e) => up(key, (x) => ({ ...x, social: { ...x.social, [k]: e.target.value } }))}
                     />
                   </F>
                 )
               })}
             </div>
-            <p className="mt-3 text-xs text-ink-3">Lien complet de la page. Un réseau laissé vide n’est pas affiché.</p>
+            <p className="mt-3 text-xs text-ink-3">
+              Collez le lien de la page ou le nom du compte (@…) : il est complété tout seul. Les liens apparaissent dans le pied de page de tout le site et dans la section des avis. Un réseau laissé vide n’est pas affiché.
+            </p>
           </Card>
         </Section>
 

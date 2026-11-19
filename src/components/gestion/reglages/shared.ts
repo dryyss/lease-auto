@@ -99,6 +99,28 @@ export function toInput(doc: Setting, legal: SettingsInput['legal']): SettingsIn
 export const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)
 const isUrl = (v: string) => /^https?:\/\/[^\s]+\.[^\s]+$/i.test(v)
 
+const SOCIAL_HOME = { facebook: 'https://www.facebook.com/', instagram: 'https://www.instagram.com/', tiktok: 'https://www.tiktok.com/@' } as const
+
+/**
+ * Lien de réseau social tel qu'on le colle : « @lease_auto », « instagram.com/lease_auto » ou le lien de partage complet.
+ * Rend le lien complet, sans les paramètres de suivi ajoutés par les applications (?igsh=…, ?_r=1&_t=…).
+ */
+export function normalizeSocial(k: keyof typeof SOCIAL_HOME, raw: string): string {
+  let v = raw.trim()
+  if (!v) return ''
+  if (/^@?[\w.-]+$/.test(v) && !/\.(com|fr|net)$/i.test(v)) return SOCIAL_HOME[k] + v.replace(/^@/, '')
+  if (!/^https?:\/\//i.test(v)) v = `https://${v.replace(/^\/+/, '')}`
+  try {
+    const u = new URL(v)
+    // Facebook garde ?id=… (pages sans nom : profile.php?id=…) ; ailleurs, la requête n'est que du suivi.
+    if (k !== 'facebook' || !u.searchParams.has('id')) u.search = ''
+    u.hash = ''
+    return u.toString().replace(/\/$/, '')
+  } catch {
+    return v
+  }
+}
+
 /** Ordre d'affichage : sert à placer le curseur sur la première erreur. */
 export const FIELD_ORDER = [
   'company.name',
@@ -142,7 +164,8 @@ export function validateSettings(v: SettingsInput): FieldErrors {
   if (v.openingHours.some((_, i) => e[`openingHours.${i}.days`] || e[`openingHours.${i}.hours`])) e.openingHours = 'Complétez chaque ligne d’horaires, ou retirez-la.'
 
   for (const k of ['facebook', 'instagram', 'tiktok'] as const) {
-    if (v.social[k].trim() && !isUrl(v.social[k].trim())) e[`social.${k}`] = 'Collez le lien complet de la page, qui commence par https://'
+    const url = normalizeSocial(k, v.social[k])
+    if (url && !isUrl(url)) e[`social.${k}`] = 'Collez le lien de la page (ex. https://www.instagram.com/lease_auto) ou le nom du compte (ex. @lease_auto).'
   }
 
   for (const k of FORMULA_KEYS) {

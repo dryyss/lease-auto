@@ -71,6 +71,15 @@ export function TikTokLogo({ className = 'size-6' }: Props) {
   )
 }
 
+export function FacebookLogo({ className = 'size-6' }: Props) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} role="img" aria-label="Facebook">
+      <rect width="32" height="32" rx="8" fill="#0866FF" />
+      <path fill="#fff" d="M21.6 32V20.4h3.9l.6-4.5h-4.5v-2.9c0-1.3.4-2.2 2.2-2.2h2.4v-4c-.4-.1-1.8-.2-3.5-.2-3.4 0-5.8 2.1-5.8 5.9v3.4h-3.9v4.5h3.9V32z" />
+    </svg>
+  )
+}
+
 export const NETWORKS = {
   google: { name: 'Google', Logo: GoogleLogo },
   instagram: { name: 'Instagram', Logo: InstagramLogo },

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { fieldName, validateSettings, type FormulaInput, type Result, type SettingsInput } from '@/components/gestion/reglages/shared'
+import { fieldName, normalizeSocial, validateSettings,type FormulaInput, type Result, type SettingsInput } from '@/components/gestion/reglages/shared'
 import { markdownToRichText } from '@/lib/gestion/richtext'
 import { internalRecipients } from '@/lib/email'
 import { isAdminUser, requireStaff } from '@/lib/gestion/session'
@@ -60,7 +60,11 @@ export async function saveSettings(v: SettingsInput): Promise<Result> {
           googleReviewUrl: t(c.googleReviewUrl),
         },
         openingHours: v.openingHours.map((h) => ({ ...(h.id ? { id: h.id } : {}), days: h.days.trim(), hours: h.hours.trim() })),
-        social: { facebook: t(v.social.facebook), instagram: t(v.social.instagram), tiktok: t(v.social.tiktok) },
+        social: {
+          facebook: t(normalizeSocial('facebook', v.social.facebook)),
+          instagram: t(normalizeSocial('instagram', v.social.instagram)),
+          tiktok: t(normalizeSocial('tiktok', v.social.tiktok)),
+        },
         financing: {
           loa: formula(v.financing.loa, true),
           lld: formula(v.financing.lld, true),

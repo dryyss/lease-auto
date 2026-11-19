@@ -3,6 +3,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { NewsletterForm } from '@/components/forms/SimpleForms'
+import { normalizeSocial } from '@/components/gestion/reglages/shared'
+import { FacebookLogo, InstagramLogo, TikTokLogo } from '@/components/ui/SocialLogos'
 import { telHref } from '@/lib/format'
 import { getSettings, payloadClient } from '@/lib/payload'
 
@@ -22,6 +24,16 @@ export async function Footer() {
     }),
   ])
   const c = settings.company ?? {}
+  // Réseaux renseignés dans Gestion > Réglages > Réseaux sociaux ; un réseau vide n'est pas affiché.
+  const socials = (
+    [
+      { key: 'facebook', name: 'Facebook', Logo: FacebookLogo },
+      { key: 'instagram', name: 'Instagram', Logo: InstagramLogo },
+      { key: 'tiktok', name: 'TikTok', Logo: TikTokLogo },
+    ] as const
+  )
+    .map((s) => ({ ...s, url: normalizeSocial(s.key, settings.social?.[s.key] ?? '') }))
+    .filter((s) => s.url)
 
   return (
     <footer className="bg-primary pb-[calc(4.75rem+env(safe-area-inset-bottom))] text-white sm:pb-0">
@@ -87,6 +99,17 @@ export async function Footer() {
                 </li>
               )}
             </ul>
+            {socials.length > 0 && (
+              <ul className="mt-5 flex gap-3" aria-label="Lease Auto sur les réseaux sociaux">
+                {socials.map(({ key, name, url, Logo }) => (
+                  <li key={key}>
+                    <a href={url} target="_blank" rel="noopener noreferrer" title={`Lease Auto sur ${name}`} className="block rounded-lg transition hover:scale-105 hover:opacity-90">
+                      <Logo className="size-9" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="mt-6 max-w-sm">
               <p className="mb-2 text-xs font-bold tracking-widest text-white/80 uppercase">Newsletter</p>
               <p className="mb-3 text-xs text-white/50">Les nouveaux arrivages et nos offres, une à deux fois par mois.</p>
