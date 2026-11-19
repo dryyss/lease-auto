@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, MailWarning, Settings } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { Where } from 'payload'
@@ -10,7 +10,8 @@ import { NewAppointment } from '@/components/gestion/rendez-vous/NewAppointment'
 import { APPT_POPULATE, toAppt, type Appt } from '@/components/gestion/rendez-vous/types'
 import { btn, Card, Empty, FilterPills, PageHeader } from '@/components/gestion/ui'
 import { plural } from '@/lib/gestion/labels'
-import { requireStaff } from '@/lib/gestion/session'
+import { isAdminUser, requireStaff } from '@/lib/gestion/session'
+import { emailEnabled } from '@/lib/services'
 
 export const metadata: Metadata = { title: 'Rendez-vous' }
 
@@ -21,6 +22,7 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
   const sp = await searchParams
   const { payload, user } = await requireStaff()
   const nowMs = Date.now()
+  const emails = emailEnabled()
   const now = new Date(nowMs).toISOString()
   const filtre = FILTERS.find((f) => f === sp.filtre)
   const liste = sp.vue === 'liste' || !!filtre
@@ -31,7 +33,7 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
     payload.find({ ...base, where: { and: [{ status: { equals: 'confirmed' } }, { startsAt: { less_than: now } }] }, sort: 'startsAt', limit: 200 }),
     payload.find({ collection: 'vehicles', where: { status: { not_equals: 'sold' } }, select: { title: true }, sort: 'title', limit: 300, depth: 0, user, overrideAccess: false }),
   ])
-  const toClose = overdue.docs.map((a) => toAppt(a, nowMs))
+  const toClose = overdue.docs.map((a) => toAppt(a, nowMs, emails))
 
   const header = (
     <PageHeader
@@ -42,10 +44,25 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
           <Link href="/gestion/creneaux" className={btn.ghost}>
             <Settings className="size-4" aria-hidden /> Régler les créneaux
           </Link>
-          <NewAppointment today={dayKey(today)} vehicles={vehicles.docs.map((v) => ({ id: v.id, title: v.title }))} />
+          <NewAppointment emails={emails} today={dayKey(today)} vehicles={vehicles.docs.map((v) => ({ id: v.id, title: v.title }))} />
         </>
       }
     />
+  )
+
+  // Tant que Resend n'est pas branché, rien ne part : on le dit clairement plutôt que de laisser croire le contraire.
+  const emailNotice = emails ? null : (
+    <div role="status" className="mb-6 flex flex-col gap-2 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center">
+      <MailWarning className="size-5 shrink-0" aria-hidden />
+      <p className="flex-1">
+        <strong>Les e-mails ne partent pas encore.</strong> Confirmations, rappels de la veille, annulations et changements d’horaire seront envoyés automatiquement dès que l’envoi d’e-mails (Resend) sera branché. En attendant, prévenez vos clients par téléphone.
+      </p>
+      {isAdminUser(user) && (
+        <Link href="/gestion/reglages#emails" className="shrink-0 font-bold underline">
+          Voir l’état des e-mails
+        </Link>
+      )}
+    </div>
   )
 
   const viewPills = (
@@ -94,7 +111,7 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
           ? payload.find({ ...base, where: histWhere, sort: '-startsAt', limit: 100 })
           : null,
     ])
-    const rows: Appt[] = list ? list.docs.map((a) => toAppt(a, nowMs)) : toClose
+    const rows: Appt[] = list ? list.docs.map((a) => toAppt(a, nowMs, emails)) : toClose
     const empty = {
       'a-venir': { title: 'Aucun rendez-vous à venir.', text: 'Les réservations du site et celles que vous créez s’afficheront ici.' },
       'a-cloturer': { title: 'Rien à clôturer.', text: 'Tous les rendez-vous passés ont un statut à jour.' },
@@ -104,6 +121,7 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
     return (
       <>
         {header}
+        {emailNotice}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           {viewPills}
           <FilterPills
@@ -142,7 +160,7 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
   })
   const byDay = new Map<string, Appt[]>()
   for (const doc of week.docs) {
-    const a = toAppt(doc, nowMs)
+    const a = toAppt(doc, nowMs, emails)
     const key = parisDayKey(a.startsAt)
     byDay.set(key, [...(byDay.get(key) ?? []), a])
   }
@@ -158,6 +176,7 @@ export default async function RendezVousPage({ searchParams }: { searchParams: P
   return (
     <>
       {header}
+      {emailNotice}
       {closeBlock}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">

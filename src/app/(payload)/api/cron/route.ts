@@ -6,7 +6,8 @@ import { runAutomations } from '@/lib/automations'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
-// Appelée toutes les heures par GitHub Actions (.github/workflows/automatisations.yml),
+// Appelée chaque matin par la tâche planifiée Vercel (vercel.json, ~7 h à Paris) et, si elle est activée,
+// toutes les heures par GitHub Actions (.github/workflows/automatisations.yml),
 // avec « Authorization: Bearer $CRON_SECRET ».
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET

@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache'
 
 import { fieldName, validateSettings, type FormulaInput, type Result, type SettingsInput } from '@/components/gestion/reglages/shared'
 import { markdownToRichText } from '@/lib/gestion/richtext'
+import { internalRecipients } from '@/lib/email'
 import { isAdminUser, requireStaff } from '@/lib/gestion/session'
+import { sendTestEmail } from '@/lib/notifications'
+import { emailEnabled } from '@/lib/services'
 
 const t = (v: string) => v.trim() || null
 
@@ -88,4 +91,16 @@ export async function saveSettings(v: SettingsInput): Promise<Result> {
   // Coordonnées, horaires, taux et mentions sont affichés partout : tout le site est rafraîchi.
   revalidatePath('/', 'layout')
   return { ok: true }
+}
+
+/** « Envoyer un e-mail de test » : aux adresses qui reçoivent les alertes de l'équipe, sinon à l'administrateur. */
+export async function sendSettingsTestEmail(): Promise<Result> {
+  const { payload, user } = await requireStaff()
+  if (!isAdminUser(user)) return { ok: false, error: 'Réservé aux administrateurs.' }
+  if (!emailEnabled()) return { ok: false, error: 'L’envoi d’e-mails (Resend) n’est pas encore branché : aucun e-mail ne peut partir.' }
+  const settings = await payload.findGlobal({ slug: 'settings', depth: 0 })
+  const to = internalRecipients(settings)
+  const recipients = to.length ? to : [user.email]
+  const sent = await sendTestEmail(payload, recipients)
+  return sent ? { ok: true } : { ok: false, error: 'L’e-mail n’a pas pu partir. Vérifiez le domaine d’envoi dans Resend, puis réessayez.' }
 }

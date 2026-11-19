@@ -12,9 +12,12 @@ export type Appt = {
   vehicle: { id: number; title: string } | null
   request: { id: number; reference: string } | null
   past: boolean
+  reminderSent: boolean
+  /** Les e-mails partent-ils (Resend branché) ? Adapte les textes des actions. */
+  emails: boolean
 }
 
-export function toAppt(a: Appointment, now: number): Appt {
+export function toAppt(a: Appointment, now: number, emails: boolean): Appt {
   const v = a.vehicle
   const r = a.request
   return {
@@ -28,6 +31,8 @@ export function toAppt(a: Appointment, now: number): Appt {
     vehicle: v == null ? null : typeof v === 'object' ? { id: v.id, title: v.title } : { id: v, title: `Véhicule n° ${v}` },
     request: r == null ? null : typeof r === 'object' ? { id: r.id, reference: r.reference ?? `n° ${r.id}` } : { id: r, reference: `n° ${r}` },
     past: new Date(a.startsAt).getTime() < now,
+    reminderSent: !!a.reminderSent,
+    emails,
   }
 }
 

@@ -1,12 +1,15 @@
 import { Lock } from 'lucide-react'
 import type { Metadata } from 'next'
 
+import { EmailStatus } from '@/components/gestion/reglages/EmailStatus'
 import { SettingsForm } from '@/components/gestion/reglages/SettingsForm'
 import { toInput } from '@/components/gestion/reglages/shared'
 import { Card, Empty, PageHeader } from '@/components/gestion/ui'
 import { ago } from '@/lib/gestion/labels'
 import { richTextToMarkdown } from '@/lib/gestion/richtext'
+import { internalRecipients } from '@/lib/email'
 import { isAdminUser, requireStaff } from '@/lib/gestion/session'
+import { emailEnabled } from '@/lib/services'
 
 export const metadata: Metadata = { title: 'Réglages' }
 
@@ -32,6 +35,7 @@ export default async function ReglagesPage() {
         title="Réglages"
         subtitle={`Coordonnées, horaires, financement et mentions légales du site.${doc.updatedAt ? ` Modifiés ${ago(doc.updatedAt)}.` : ''}`}
       />
+      <EmailStatus enabled={emailEnabled()} recipients={internalRecipients(doc)} />
       <SettingsForm initial={toInput(doc, { legalNotice, privacyPolicy, terms })} />
     </>
   )

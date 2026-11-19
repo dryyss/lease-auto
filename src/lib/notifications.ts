@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import type { Appointment, Media, Request, Subscriber, Vehicle } from '@/payload-types'
 
+import { manageAppointmentUrl } from './appointment-link'
 import { CREDIT_WARNING } from './credit-legal'
 import { internalRecipients, renderEmail, sendEmail, siteUrl, type EmailBlock } from './email'
 import { FORMULA_LABELS, formatEUR, formatKm } from './format'
@@ -206,11 +207,9 @@ const KIND_LABELS: Record<Appointment['kind'], string> = { 'test-drive': 'Essai'
 const when = (iso: string) =>
   new Date(iso).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
 
-/** PUB-14 + MAIL-03 : confirmation au client et notification à l'équipe. */
-export async function notifyAppointment(payload: Payload, a: Appointment) {
-  const settings = await getSettings(payload)
+const appointmentRows = async (payload: Payload, a: Appointment, settings: Awaited<ReturnType<typeof getSettings>>): Promise<EmailBlock> => {
   const vehicle = await vehicleOf(payload, a.vehicle)
-  const rows: EmailBlock = {
+  return {
     type: 'rows',
     rows: [
       ['Date', when(a.startsAt)],
@@ -219,33 +218,118 @@ export async function notifyAppointment(payload: Payload, a: Appointment) {
       ['Adresse', [settings.company?.address, settings.company?.postalCode, settings.company?.city].filter(Boolean).join(' ')],
     ],
   }
-  await sendEmail(payload, {
-    to: a.email,
-    subject: `Rendez-vous confirmé le ${when(a.startsAt)}`,
-    html: renderEmail({ settings, title: 'Votre rendez-vous est confirmé', blocks: [{ type: 'p', text: `Bonjour ${a.name},` }, rows, { type: 'p', text: 'Un empêchement ? Appelez-nous pour décaler le rendez-vous.' }] }),
-  })
-  await sendEmail(payload, {
-    to: internalRecipients(settings),
-    replyTo: a.email,
-    subject: `[Rendez-vous] ${a.name} · ${when(a.startsAt)}`,
-    html: renderEmail({ settings, title: `Nouveau rendez-vous : ${a.name}`, blocks: [rows, { type: 'rows', rows: [['Téléphone', a.phone], ['E-mail', a.email]] }] }),
-  })
 }
 
-/** AUTO-03 : rappel la veille du rendez-vous. */
-export async function remindAppointment(payload: Payload, a: Appointment) {
+const manageButton = (a: Appointment): EmailBlock => ({ type: 'button', label: 'Annuler ou changer de créneau', href: manageAppointmentUrl(a) })
+
+/** PUB-14 + MAIL-03 : confirmation au client et notification à l'équipe. Renvoie true si l'e-mail du client est parti. */
+export async function notifyAppointment(payload: Payload, a: Appointment, { team = true }: { team?: boolean } = {}) {
   const settings = await getSettings(payload)
-  return sendEmail(payload, {
+  const rows = await appointmentRows(payload, a, settings)
+  const sent = await sendEmail(payload, {
     to: a.email,
-    subject: `Rappel : rendez-vous demain chez Lease Auto`,
+    subject: `Rendez-vous confirmé le ${when(a.startsAt)}`,
     html: renderEmail({
       settings,
-      title: 'À demain !',
+      title: 'Votre rendez-vous est confirmé',
+      blocks: [{ type: 'p', text: `Bonjour ${a.name},` }, rows, { type: 'p', text: 'Un empêchement ? Annulez ou choisissez un autre créneau en un clic :' }, manageButton(a)],
+    }),
+  })
+  if (team)
+    await sendEmail(payload, {
+      to: internalRecipients(settings),
+      replyTo: a.email,
+      subject: `[Rendez-vous] ${a.name} · ${when(a.startsAt)}`,
+      html: renderEmail({ settings, title: `Nouveau rendez-vous : ${a.name}`, blocks: [rows, { type: 'rows', rows: [['Téléphone', a.phone], ['E-mail', a.email]] }, { type: 'button', label: 'Voir les rendez-vous', href: `${siteUrl()}/gestion/rendez-vous` }] }),
+    })
+  return sent
+}
+
+const parisDay = (ms: number) => new Date(ms).toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' })
+
+/** AUTO-03 : rappel avant le rendez-vous (« demain » ou « aujourd'hui » selon le jour). */
+export async function remindAppointment(payload: Payload, a: Appointment) {
+  const settings = await getSettings(payload)
+  const today = parisDay(Date.now()) === parisDay(new Date(a.startsAt).getTime())
+  return sendEmail(payload, {
+    to: a.email,
+    subject: today ? 'Rappel : rendez-vous aujourd’hui chez Lease Auto' : 'Rappel : rendez-vous demain chez Lease Auto',
+    html: renderEmail({
+      settings,
+      title: today ? 'À tout à l’heure !' : 'À demain !',
       blocks: [
         { type: 'p', text: `Bonjour ${a.name}, nous vous attendons ${when(a.startsAt)} pour votre ${KIND_LABELS[a.kind].toLowerCase()}.` },
         ...(settings.company?.mapsUrl ? [{ type: 'button' as const, label: 'Itinéraire', href: settings.company.mapsUrl }] : []),
+        { type: 'p', text: 'Un empêchement ? Prévenez-nous en un clic pour libérer le créneau :' },
+        manageButton(a),
       ],
     }),
+  })
+}
+
+/** Rendez-vous annulé : par l'agence (le client est prévenu) ou par le client (confirmation + alerte à l'équipe). */
+export async function notifyAppointmentCancelled(payload: Payload, a: Appointment, by: 'agency' | 'client') {
+  const settings = await getSettings(payload)
+  const rows = await appointmentRows(payload, a, settings)
+  const sent = await sendEmail(payload, {
+    to: a.email,
+    subject: `Rendez-vous du ${when(a.startsAt)} annulé`,
+    html: renderEmail({
+      settings,
+      title: 'Votre rendez-vous est annulé',
+      blocks: [
+        { type: 'p', text: by === 'client' ? `Bonjour ${a.name}, nous avons bien noté l’annulation de votre rendez-vous :` : `Bonjour ${a.name}, nous sommes contraints d’annuler votre rendez-vous :` },
+        rows,
+        { type: 'p', text: 'Vous pouvez choisir un nouveau créneau à tout moment.' },
+        { type: 'button', label: 'Prendre un nouveau rendez-vous', href: `${siteUrl()}/rendez-vous` },
+      ],
+    }),
+  })
+  if (by === 'client')
+    await sendEmail(payload, {
+      to: internalRecipients(settings),
+      replyTo: a.email,
+      subject: `[Rendez-vous annulé par le client] ${a.name} · ${when(a.startsAt)}`,
+      html: renderEmail({ settings, title: `${a.name} a annulé son rendez-vous`, blocks: [rows, { type: 'rows', rows: [['Téléphone', a.phone], ['E-mail', a.email]] }, { type: 'p', text: 'Le créneau est de nouveau proposé sur le site.' }] }),
+    })
+  return sent
+}
+
+/** Rendez-vous déplacé : nouveau créneau au client ; si c'est lui qui l'a changé, l'équipe est prévenue. */
+export async function notifyAppointmentMoved(payload: Payload, a: Appointment, previous: string, by: 'agency' | 'client') {
+  const settings = await getSettings(payload)
+  const rows = await appointmentRows(payload, a, settings)
+  const sent = await sendEmail(payload, {
+    to: a.email,
+    subject: `Nouveau créneau : ${when(a.startsAt)}`,
+    html: renderEmail({
+      settings,
+      title: 'Votre rendez-vous a changé d’horaire',
+      blocks: [
+        { type: 'p', text: `Bonjour ${a.name}, votre rendez-vous initialement prévu ${when(previous)} est déplacé :` },
+        rows,
+        { type: 'p', text: 'Ce nouvel horaire ne vous convient pas ?' },
+        manageButton(a),
+      ],
+    }),
+  })
+  if (by === 'client')
+    await sendEmail(payload, {
+      to: internalRecipients(settings),
+      replyTo: a.email,
+      subject: `[Rendez-vous déplacé par le client] ${a.name} · ${when(a.startsAt)}`,
+      html: renderEmail({ settings, title: `${a.name} a changé de créneau`, blocks: [{ type: 'rows', rows: [['Ancien créneau', when(previous)]] }, rows, { type: 'rows', rows: [['Téléphone', a.phone], ['E-mail', a.email]] }] }),
+    })
+  return sent
+}
+
+/** E-mail de test (Réglages) : vérifie l'envoi de bout en bout. */
+export async function sendTestEmail(payload: Payload, to: string[]) {
+  const settings = await getSettings(payload)
+  return sendEmail(payload, {
+    to,
+    subject: 'Test d’envoi Lease Auto',
+    html: renderEmail({ settings, title: 'Les e-mails fonctionnent', blocks: [{ type: 'p', text: 'Cet e-mail de test a été envoyé depuis la page Réglages de la gestion. Les confirmations, rappels et annulations de rendez-vous partent de la même façon.' }] }),
   })
 }
 

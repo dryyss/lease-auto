@@ -11,7 +11,7 @@ import { APPOINTMENT_KINDS } from '@/lib/gestion/labels'
 import { ErrorText, Modal, safeRun } from './dialog'
 
 /** « Nouveau rendez-vous » : rendez-vous pris au téléphone ou en agence. */
-export function NewAppointment({ today, vehicles }: { today: string; vehicles: { id: number; title: string }[] }) {
+export function NewAppointment({ today, vehicles, emails }: { today: string; vehicles: { id: number; title: string }[]; emails: boolean }) {
   const router = useRouter()
   const ref = useRef<HTMLDialogElement>(null)
   const form = useRef<HTMLFormElement>(null)
@@ -55,7 +55,7 @@ export function NewAppointment({ today, vehicles }: { today: string; vehicles: {
       >
         <Plus className="size-4" aria-hidden /> Nouveau rendez-vous
       </button>
-      <Modal dialogRef={ref} wide title="Nouveau rendez-vous" description="Le client reçoit aussitôt un e-mail de confirmation.">
+      <Modal dialogRef={ref} wide title="Nouveau rendez-vous" description={emails ? 'Le client reçoit aussitôt un e-mail de confirmation, puis un rappel la veille.' : 'Les e-mails ne sont pas encore branchés : confirmez le rendez-vous au client par téléphone.'}>
         <form
           ref={form}
           onChange={() => warning && reset()}

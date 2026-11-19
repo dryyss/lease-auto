@@ -78,6 +78,11 @@ export function AppointmentCard({ a }: { a: Appt }) {
             </div>
           )}
         </dl>
+        {a.status === 'confirmed' && !a.past && (
+          <p className="mt-3 text-xs text-ink-3">
+            {!a.emails ? 'E-mails pas encore branchés : ni confirmation ni rappel envoyés.' : a.reminderSent ? 'Rappel de la veille envoyé.' : 'Rappel envoyé automatiquement la veille au matin.'}
+          </p>
+        )}
         <div className="mt-5 border-t border-line pt-4">
           <AppointmentActions a={a} />
         </div>

@@ -6,6 +6,7 @@ import { demoAccessAllowed } from '@/auth/devStrategy'
 import { PageHero } from '@/components/ui/PageHero'
 import { customerEmail } from '@/lib/customer-session'
 import { FORMULA_LABELS, formatEUR, telHref } from '@/lib/format'
+import { manageAppointmentPath } from '@/lib/appointment-link'
 import { getSettings, payloadClient } from '@/lib/payload'
 import { BUSINESS_DOCS, isBusinessProfile, PERSONAL_DOCS } from '@/lib/required-documents'
 import type { Appointment, Request } from '@/payload-types'
@@ -104,7 +105,7 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
       limit: 10,
       depth: 1,
       overrideAccess: true,
-      select: { startsAt: true, kind: true, vehicle: true },
+      select: { startsAt: true, kind: true, vehicle: true, email: true },
     }),
   ])
   const documents = requests.docs.length
@@ -251,6 +252,9 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
                       {KINDS[a.kind]}
                       {a.vehicle && typeof a.vehicle === 'object' ? ` · ${a.vehicle.title}` : ''}
                     </p>
+                    <Link href={manageAppointmentPath({ id: a.id, email: a.email ?? email })} className="mt-1.5 inline-block text-xs font-bold text-accent hover:underline">
+                      Changer de créneau ou annuler
+                    </Link>
                   </li>
                 ))}
               </ul>

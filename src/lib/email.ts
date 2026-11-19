@@ -2,6 +2,8 @@ import type { Payload } from 'payload'
 
 import type { Setting } from '@/payload-types'
 
+import { emailEnabled } from './services'
+
 const SITE = () => process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 const esc = (s: unknown) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -66,6 +68,11 @@ export async function sendEmail(
 ) {
   const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean)
   if (!recipients.length) return false
+  // Sans Resend, Payload se contente d'écrire l'e-mail dans les journaux : on le dit, au lieu de le compter comme envoyé.
+  if (!emailEnabled()) {
+    payload.logger.info({ subject, to: recipients.length }, 'E-mail non envoyé : Resend n’est pas branché')
+    return false
+  }
   try {
     await payload.sendEmail({ to: recipients, subject, html, ...(replyTo && { replyTo }) })
     return true
