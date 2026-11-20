@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { demoAccessAllowed } from '@/auth/devStrategy'
 import { PageHero } from '@/components/ui/PageHero'
 import { customerEmail } from '@/lib/customer-session'
+import { demoCustomerExists } from '@/lib/demo-customer'
 import { FORMULA_LABELS, formatEUR, telHref } from '@/lib/format'
 import { manageAppointmentPath } from '@/lib/appointment-link'
 import { getSettings, payloadClient } from '@/lib/payload'
@@ -48,6 +49,7 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
 
   if (!email) {
     const { ref } = await searchParams
+    const demo = demoAccessAllowed() && (await demoCustomerExists(await payloadClient()))
     return (
       <>
         <PageHero compact eyebrow="Mon espace" title="Suivez votre demande" intro="Avancement de votre dossier, pièces à fournir et rendez-vous, au même endroit." crumbs={[{ label: 'Mon espace' }]} />
@@ -56,7 +58,7 @@ export default async function CustomerSpacePage({ searchParams }: { searchParams
             <h2 className="mb-1 text-xl font-black text-primary">Ouvrir mon espace</h2>
             <p className="mb-6 text-sm text-ink-2">Pas de mot de passe : la référence reçue à l’envoi de votre demande (elle commence par LA-) et votre e-mail suffisent.</p>
             <SpaceLogin reference={ref} />
-            {demoAccessAllowed() && (
+            {demo && (
               <form action={openDemoSpace} className="mt-6 border-t border-line pt-6">
                 <p className="mb-3 text-sm text-ink-2">Démonstration : découvrez l’espace avec un dossier d’exemple.</p>
                 <button type="submit" className="btn-ghost">

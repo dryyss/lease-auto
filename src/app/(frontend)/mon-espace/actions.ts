@@ -7,7 +7,7 @@ import type { ActionResult } from '@/app/(frontend)/actions'
 import { demoAccessAllowed } from '@/auth/devStrategy'
 import { closeCustomerSession, customerEmail, openCustomerSession } from '@/lib/customer-session'
 import { DOCUMENT_KINDS, readFiles } from '@/lib/uploads'
-import { DEMO_CUSTOMER } from '@/lib/demo-customer'
+import { DEMO_CUSTOMER, demoCustomerExists } from '@/lib/demo-customer'
 import { notifyDocumentsReceived } from '@/lib/notifications'
 import { payloadClient } from '@/lib/payload'
 import { checkSpam } from '@/lib/spam'
@@ -37,7 +37,7 @@ export async function openSpace(form: FormData): Promise<ActionResult> {
 
 /** Compte de démonstration, seulement tant que l'accès démo est activé (DEMO_ACCESS_CODE). */
 export async function openDemoSpace() {
-  if (!demoAccessAllowed()) redirect('/mon-espace')
+  if (!demoAccessAllowed() || !(await demoCustomerExists(await payloadClient()))) redirect('/mon-espace')
   await openCustomerSession(DEMO_CUSTOMER.email)
   redirect('/mon-espace')
 }
